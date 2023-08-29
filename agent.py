@@ -14,7 +14,7 @@ class Agent:
         if relation_time_dist > 2:
             new_acc += 0 # ver magnitud
         elif relation_time_dist < 2:
-            new_acc -= (self.acc + 0) # ver magnitud --> cierta f(max_speed, neighbout.acc)
+            new_acc -= (self.acc + 0) # ver magnitud --> cierta f(max_speed, neighbour.acc)
 
         # si veo las luces rojas del adelante está frenando, lo podríamos ver con su acc negativa?        
 

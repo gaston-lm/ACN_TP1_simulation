@@ -39,4 +39,4 @@ class Lane_simulation:
                 if agent.pos > 12700:
                     self.lane.remove[0] # Eliminamos el primero (el que iba adelante y llegó).
 
-                agent.update(self.lane[agent.id + 1]) # Otra función para el primero? Es el único que no necesita al vecino. Otra opción sería que cada agent tenga almacenado a su vecino.
+                agent.update(self.lane[agent.id - 1]) # Otra función para el primero? Es el único que no necesita al vecino. Otra opción sería que cada agent tenga almacenado a su vecino.
