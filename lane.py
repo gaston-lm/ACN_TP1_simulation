@@ -1,6 +1,6 @@
-import typing
 import numpy as np
 from agent import *
+from typing import List
 
 class Lane_simulation:
     def __init__(self, time_limit, agents):
@@ -9,15 +9,15 @@ class Lane_simulation:
         self.time_limit:int = time_limit
         self.agents:int = agents
 
-        self.pos:List[List[float]] = np.array(([-1]*agents)*time_limit)
-        self.acc:List[List[float]] = np.array(([-1]*agents)*time_limit)
-        self.spd:List[List[float]] = np.array(([-1]*agents)*time_limit)
+        self.pos:List[List[float]] = np.array(([[-1]*agents])*time_limit)
+        self.acc:List[List[float]] = np.array(([[-1]*agents])*time_limit)
+        self.spd:List[List[float]] = np.array(([[-1]*agents])*time_limit)
 
         self.lane:List[Agent] = []
 
     def enter(self, a:int, t:int):
-        spd:float = np.random.uniform(low=8.33, high=16.66, size=1).item() # entre 30 y 60 km/h
-        self.lane.append(Agent(id=a, pos=0, speed=spd, acceleration=0))
+        spd:float = np.random.uniform(low=8.33, high=16.66, size=1).item() # Entre 30 y 60 km/h
+        self.lane.append(Agent(id=a, position=0, speed=spd, acceleration=0))
         self.pos[a,t] = 0
         self.spd[a,t] = spd
         self.acc[a,t] = 0
@@ -26,7 +26,7 @@ class Lane_simulation:
         agents_enter = 0
         for t in range(self.time_limit):
             if self.agents > agents_enter:
-                # con alguna proba:
+                # Con alguna proba:
                 self.enter(agents_enter, t)
                 agents_enter += 1
 
@@ -35,8 +35,8 @@ class Lane_simulation:
                 self.spd[agent.id,t] = agent.spd
                 self.acc[agent.id,t] = agent.acc
 
-                # si ya termino el viaje nos re vimos agent
+                # Si ya termino el viaje, borramos al Agent.
                 if agent.pos > 12700:
-                    self.lane.remove[0] # eliminamos el primero (el que iba adelante y llegó)
+                    self.lane.remove[0] # Eliminamos el primero (el que iba adelante y llegó).
 
-                agent.update()            
+                agent.update(self.lane[agent.id + 1]) # Otra función para el primero? Es el único que no necesita al vecino. Otra opción sería que cada agent tenga almacenado a su vecino.

@@ -1,8 +1,8 @@
 class Agent:
-    def __init__(self, id, pos, speed, acceleration):
-        self.pos = pos
-        self.spd = spd
-        self.acc = acc
+    def __init__(self, id, position, speed, acceleration):
+        self.pos = position
+        self.spd = speed
+        self.acc = acceleration
         self.id = id
 
     def update_acc(self, neighbour, max_spd):
@@ -27,7 +27,7 @@ class Agent:
     def update_spd(self):
         self.spd = self.spd + self.acc # * time 
 
-    def update(self):
+    def update(self, neighbour):
         self.update_spd()
         self.update_pos()
         # De Liniers a Acceso Norte es 80km/h
