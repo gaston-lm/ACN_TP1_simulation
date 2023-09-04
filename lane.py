@@ -4,24 +4,24 @@ from typing import List
 
 class Lane_simulation:
     def __init__(self, time_limit, agents, alpha, l, m):
-        # Pre: agents <= time 
-        self.time:int = 0
         self.time_limit:int = time_limit
-        self.agents:int = agents
 
-        self.pos:List[List[float]] = np.array(([[0.0]*agents])*time_limit)
-        self.acc:List[List[float]] = np.array(([[0.0]*agents])*time_limit)
-        self.spd:List[List[float]] = np.array(([[0.0]*agents])*time_limit)
-
-        # self.lane:List[Agent] = []
+        self.pos:List[List[float]] = np.zeros((1,time_limit))
+        self.acc:List[List[float]] = np.zeros((1,time_limit))
+        self.spd:List[List[float]] = np.zeros((1,time_limit))
 
         self.alpha = alpha
         self.l = l
         self.m = m
 
     def enter(self, a:int, t:int):
-        spd:float = np.random.uniform(low=8.33, high=8.34, size=1).item() # Entre 30 y 60 km/h
-        # self.lane.append(Agent(id=a, position=0, speed=spd, acceleration=0))
+        if t != 0:
+            new_agent = np.zeros((1,self.time_limit))
+            self.pos = np.vstack((self.pos, new_agent))
+            self.acc = np.vstack((self.acc, new_agent))
+            self.spd = np.vstack((self.spd, new_agent))
+        
+        spd:float = np.random.uniform(low=8.33, high=12.5, size=1).item() # Entre 30 y 45 km/h
         self.pos[a,t] = 1
         self.spd[a,t] = spd
         self.acc[a,t] = 0
@@ -39,20 +39,20 @@ class Lane_simulation:
 
             # De Liniers a Acceso Norte es 80km/h
             max_spd:float = 22.22 # 80 km/h en m/s
-            if self.pos[i,t-1] > 10000:
+            if self.pos[i,t-1] > 13000:
                 max_spd = 27.77 # 100 km/h
 
             if i == 0:
-                new_acc = 3.5
+                new_acc = 4
             else:
                 if self.pos[i-1,t-1] < self.pos[i,t-1]:
-                    print("Choque de "+str(i)+" con "+str(i-1)+" en t="+str(t))
+                    print("Choque de "+str(i)+" con "+str(i-1)+" en t="+str(t-1))
                 new_acc = ((self.alpha * self.spd[i,t-1]**self.m) / (self.pos[i-1,t-1] - self.pos[i,t-1])**self.l) * (self.spd[i-1,t-1] - self.spd[i,t-1])
             
-            if new_acc > 3.5:
-                new_acc = 3.5
-            elif new_acc < -3.5:
-                new_acc = -3.5
+            if new_acc > 4:
+                new_acc = 4
+            elif new_acc < 4:
+                new_acc = 4
 
             if self.spd[i,t] + new_acc <= max_spd:
                 self.acc[i,t] = new_acc # + random error * Indicadora (se distrajo o no) --> poisson?
@@ -63,32 +63,17 @@ class Lane_simulation:
     
     def simulation(self):
         agents_enter = 0
-        for t in range(self.time_limit):
-            if self.agents > agents_enter:
-                # Con alguna proba:
+        self.enter(agents_enter,0)
+        t = 1
+        agents_enter = 1
+        while t < self.time_limit:
+            
+            self.update(t)
+
+            p = np.random.random(size=1)
+            # Con alguna proba entra un auto nuevo:
+            if p > 0.5:
                 self.enter(agents_enter, t)
                 agents_enter += 1
             
-            if t == 0:
-                continue
-            else:
-                self.update(t)
-
-            # for agent in self.lane:
-            #     self.pos[agent.id,t] = agent.pos
-            #     self.spd[agent.id,t] = agent.spd
-            #     self.acc[agent.id,t] = agent.acc
-
-            #     # Si ya termino el viaje, borramos al Agent.
-            #     if agent.pos > 12700:
-            #         self.lane.pop(0) # Eliminamos el primero (el que iba adelante y llegó).
-
-            #     neigbour_prev_pos = self.pos[agent.id - 1, t - 1]
-            #     neigbour_prev_spd = self.spd[agent.id - 1, t - 1]
-            #     self_prev_pos = self.pos[agent.id, t-1]
-            #     self_prev_spd = self.spd[agent.id, t-1]
-            #     self_prev_acc = self.acc[agent.id, t-1]
-            #     if agent.id == 0:
-            #         agent.update_first()
-            #     else:
-            #         agent.update(self_prev_pos, self_prev_spd, self_prev_acc, neigbour_prev_pos, neigbour_prev_spd, self.alpha, self.l, self.m) # Otra función para el primero? Es el único que no necesita al vecino. Otra opción sería que cada agent tenga almacenado a su vecino.
+            t += 1
