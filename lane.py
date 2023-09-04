@@ -20,7 +20,7 @@ class Lane_simulation:
         self.m = m
 
     def enter(self, a:int, t:int):
-        spd:float = np.random.uniform(low=8.33, high=16, size=1).item() # Entre 30 y 60 km/h
+        spd:float = np.random.uniform(low=8.33, high=8.34, size=1).item() # Entre 30 y 60 km/h
         # self.lane.append(Agent(id=a, position=0, speed=spd, acceleration=0))
         self.pos[a,t] = 1
         self.spd[a,t] = spd
@@ -45,6 +45,8 @@ class Lane_simulation:
             if i == 0:
                 new_acc = 3.5
             else:
+                if self.pos[i-1,t-1] < self.pos[i,t-1]:
+                    print("Choque de "+str(i)+" con "+str(i-1)+" en t="+str(t))
                 new_acc = ((self.alpha * self.spd[i,t-1]**self.m) / (self.pos[i-1,t-1] - self.pos[i,t-1])**self.l) * (self.spd[i-1,t-1] - self.spd[i,t-1])
             
             if new_acc > 3.5:
