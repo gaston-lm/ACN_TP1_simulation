@@ -38,7 +38,7 @@ class RoadSimulation:
             self.pos[i, t] = self.pos[i, t-1] + self.spd[i, t-1] * self.delta_t
             self.spd[i, t] = max(0.0, v + self.acc[i, t-1] * self.delta_t)
             
-            if i == 0:
+            if i == 0 and t == 0:
                 self.acc[i,t] = self.a_max
             else:
                 if s == 0:
