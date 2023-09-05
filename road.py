@@ -1,7 +1,7 @@
 import numpy as np
 
 class RoadSimulation:
-    def __init__(self, time_limit, delta_t, a_max, delta, safety_dist):
+    def __init__(self, time_limit, delta_t, a_max, b, delta, headway, s_0):
         self.time_limit = time_limit
 
         self.pos = np.zeros((1,time_limit))
@@ -10,7 +10,9 @@ class RoadSimulation:
         self.delta_t = delta_t
         self.a_max = a_max
         self.delta = delta
-        self.s_d = safety_dist
+        self.headway = headway
+        self.b = b
+        self.s_0 = s_0
 
     def enter(self, a, t):
         if t != 0:
@@ -28,9 +30,9 @@ class RoadSimulation:
         i = 0
         while i < len(self.pos[:,t]):
             # velocidad deseada v_0
-            v_0 = 22.22
+            v_0 = 30 # 22.22
             if self.pos[i, t-1] > 13000:
-                v_0 = 27.77
+                v_0 = 30 # 27.77
             
             v = self.spd[i, t-1]
             s = self.pos[i, t-1] - self.pos[i-1, t-1]
@@ -41,15 +43,20 @@ class RoadSimulation:
             if i == 0:
                 acc = self.a_max
             else:
-                if s == 0:
+                if s == 0: # revisar
                     acc = 0
                 else:
-                    acc = self.a_max * (1- (v / v_0) ** self.delta - (self.s_d / s) ** 2)
+                    s_star = self.s_0 + v*self.headway + (v * (self.spd[i-1, t] - v)) / (2*np.sqrt(self.a_max*self.b))
+                    acc = self.a_max * (1- (v / v_0) ** self.delta - (s_star / s) ** 2)
             
             if acc + self.spd[i,t] > v_0:
                 acc = v_0 - self.spd[i,t]
             
+            acc_noise = np.random.normal(loc=0, scale=0.25)
             self.acc[i,t] = acc
+            # ver bien desp
+            if acc < -8:
+                print("Mucho frenado")
 
             if i != 0:
                 if self.pos[i-1,t] < self.pos[i,t]:
