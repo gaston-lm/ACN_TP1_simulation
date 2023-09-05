@@ -16,7 +16,6 @@ class RoadSimulation:
         if t != 0:
             new_agent = np.zeros((1,self.time_limit))
             print(new_agent.shape)
-            print(self.pos.shape)
             self.pos = np.vstack((self.pos, new_agent))
             self.acc = np.vstack((self.acc, new_agent))
             self.spd = np.vstack((self.spd, new_agent))
@@ -28,7 +27,6 @@ class RoadSimulation:
 
     def update(self, t, a):
         i = 0
-        print("a"+str(a))
         while i < a:
             # velocidad deseada v_0
             v_0 = 22.22
@@ -39,7 +37,7 @@ class RoadSimulation:
             s = self.pos[i, t-1] - self.pos[i-1, t-1]
             
             self.pos[i, t] = self.pos[i, t-1] + self.spd[i, t-1] * self.delta_t
-            self.spd[i, t] = max(0.0, v + a * self.delta_t)
+            self.spd[i, t] = max(0.0, v + self.acc[i, t-1] * self.delta_t)
             
             if i == 0:
                 self.acc = self.a_max
@@ -48,6 +46,8 @@ class RoadSimulation:
                     a = 0
                 else:
                     a = self.a_max * (1- (v / v_0) ** self.delta - (self.s_d / s) ** 2)
+
+            self.acc[i, t] = a
 
             if i != 0:
                 if self.pos[i-1,t] < self.pos[i,t]:
