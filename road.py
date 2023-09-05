@@ -24,9 +24,9 @@ class RoadSimulation:
         self.spd[a,t] = spd
         self.acc[a,t] = 0
 
-    def update(self, t, a):
+    def update(self, t):
         i = 0
-        while i < a:
+        while i < len(self.pos[:,t]):
             # velocidad deseada v_0
             v_0 = 22.22
             if self.pos[i, t-1] > 13000:
@@ -61,7 +61,7 @@ class RoadSimulation:
         agents_enter = 1
 
         while t < self.time_limit:
-            self.update(t, agents_enter)
+            self.update(t)
             p = np.random.random(size=1)
             # Con alguna proba entra un auto nuevo:
             if p > 0.5:
