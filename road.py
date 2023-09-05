@@ -15,7 +15,6 @@ class RoadSimulation:
     def enter(self, a, t):
         if t != 0:
             new_agent = np.zeros((1,self.time_limit))
-            print(new_agent.shape)
             self.pos = np.vstack((self.pos, new_agent))
             self.acc = np.vstack((self.acc, new_agent))
             self.spd = np.vstack((self.spd, new_agent))
