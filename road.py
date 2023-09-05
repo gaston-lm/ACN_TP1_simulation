@@ -40,14 +40,14 @@ class RoadSimulation:
             self.spd[i, t] = max(0.0, v + self.acc[i, t-1] * self.delta_t)
             
             if i == 0:
-                self.acc = self.a_max
+                self.acc[i,t] = self.a_max
             else:
                 if s == 0:
-                    a = 0
+                    acc = 0
                 else:
-                    a = self.a_max * (1- (v / v_0) ** self.delta - (self.s_d / s) ** 2)
+                    acc = self.a_max * (1- (v / v_0) ** self.delta - (self.s_d / s) ** 2)
 
-            self.acc[i, t] = a
+                self.acc[i, t] = acc
 
             if i != 0:
                 if self.pos[i-1,t] < self.pos[i,t]:
