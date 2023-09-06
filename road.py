@@ -17,6 +17,7 @@ class RoadSimulation:
         self.headway = []
         self.time_out = []
         self.time_in = []
+        self.arrived = set()
 
     def enter(self, a, t):
         if t != 0:
@@ -34,7 +35,6 @@ class RoadSimulation:
         self.acc[a,t] = 0
 
         self.time_in.append(t)
-        self.arrived = set()
 
     def update(self, t):
         i = 0
