@@ -1,7 +1,7 @@
 import numpy as np
 
 class RoadSimulation:
-    def __init__(self, time_limit, delta_t, a_max, b, delta, headway, s_0, car_length):
+    def __init__(self, time_limit, delta_t, a_max, b, delta, s_0, car_length):
         self.time_limit = time_limit
 
         self.pos = np.zeros((1,time_limit))
@@ -10,10 +10,13 @@ class RoadSimulation:
         self.delta_t = delta_t
         self.a_max = a_max
         self.delta = delta
-        self.headway = headway
         self.b = b
         self.s_0 = s_0
         self.car_length = car_length
+
+        self.headway = []
+        self.time_out = []
+        self.time_in = []
 
     def enter(self, a, t):
         if t != 0:
@@ -22,14 +25,21 @@ class RoadSimulation:
             self.acc = np.vstack((self.acc, new_agent))
             self.spd = np.vstack((self.spd, new_agent))
         
+        self.headway.append(np.random.lognormal(mean=0.15, sigma=0.22))
+
         spd = np.random.uniform(low=8.33, high=11.11, size=1).item() # Entre 30 y 45 km/h
+
         self.pos[a,t] = 1
         self.spd[a,t] = spd
         self.acc[a,t] = 0
 
+        self.time_in.append(t)
+        self.arrived = set()
+
     def update(self, t):
         i = 0
         while i < len(self.pos[:,t]):
+            
             # velocidad deseada v_0
             v_0 = 22.22 
             if self.pos[i, t-1] > 13000:
@@ -44,7 +54,7 @@ class RoadSimulation:
                 v = self.spd[i, t]
                 s = self.pos[i, t] - self.pos[i-1, t] - self.car_length
 
-                s_star = self.s_0 + v*self.headway + (v * (v - self.spd[i-1, t])) / (2*np.sqrt(self.a_max*self.b))
+                s_star = self.s_0 + v*self.headway[i] + (v * (v - self.spd[i-1, t])) / (2*np.sqrt(self.a_max*self.b))
                 acc = self.a_max * (1 - (v / v_0) ** self.delta - (s_star / s) ** 2)
             
             if acc + self.spd[i,t] > v_0:
@@ -55,20 +65,23 @@ class RoadSimulation:
             lm = 0.0001
 
             if indicadora < lm:
-                print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
                 magnitud = np.random.normal(loc=0, scale=1) 
                 self.acc[i,t] = acc + acc_noise + magnitud
             else:
                 self.acc[i,t] = acc + acc_noise
 
             # ver bien desp
-            if acc < -2:
-                print("Mucho frenado")
+            if acc < -8:
                 print("Mucho frenado de " + str(i) + " en t=" + str(t))
 
             if i != 0:
                 if self.pos[i-1,t] < self.pos[i,t]:
                     print("Choque de "+ str(i) + " con " + str(i-1) + " en t="+str(t))
+
+            if self.pos[i, t] >= 15500 and i not in self.arrived:
+                self.time_out.append(t)
+                self.arrived.add(i)
+
 
             i += 1
 
@@ -87,3 +100,14 @@ class RoadSimulation:
                 agents_enter += 1
             
             t += 1
+    
+    def get_results(self):
+        time_out = np.array(self.time_out)
+        time_in = np.array(self.time_in[:time_out.shape[0]])
+        
+        travel_time = time_out - time_in
+
+        avg_travel_time = np.mean(travel_time)
+
+        return avg_travel_time
+
