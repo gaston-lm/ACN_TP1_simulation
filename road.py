@@ -101,7 +101,7 @@ class RoadSimulation:
             
             t += 1
     
-    def get_results(self):
+    def get_avg_travel_time(self):
         time_out = np.array(self.time_out)
         time_in = np.array(self.time_in[:time_out.shape[0]])
         
@@ -111,3 +111,18 @@ class RoadSimulation:
 
         return avg_travel_time
 
+    def get_avg_travel_speed(self):
+        sum = 0
+        for i, row in enumerate(self.spd):
+            spd_agent = row[self.time_in[i]:self.time_out[i]+1]
+            sum += np.mean(spd_agent)
+
+        return np.mean(sum)
+
+    def get_avg_travel_acce(self):
+        sum = 0
+        for i, row in enumerate(self.spd):
+            acc_agent = row[self.time_in[i]:self.time_out[i]+1]
+            sum += np.mean(acc_agent)
+
+        return np.mean(sum)
