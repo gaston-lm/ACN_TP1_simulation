@@ -1,5 +1,5 @@
 from agent import *
-from lane import *
+from basura.lane import *
 
 # Establezco cuantos paths voy a simular
 paths_n:int = 10000
