@@ -43,52 +43,56 @@ class RoadSimulation:
 
     def update(self, t):
         i = 0
-
         while i < len(self.pos[:,t]):
-            # velocidad deseada v_0
+            # Velocidad deseada del conductor (máxima de gral. paz ¿+ ruido?)
             v_0 = 22.22 
             if self.pos[i, t-1] > 13000:
                 v_0 = 27.77
             
+            # Actualización de la posición y velocidad en el segundo t. Física, no es una decisión del agente.
             self.pos[i, t] = self.pos[i, t-1] + self.spd[i, t-1] * 1 # unidad de tiempo (1s)
             self.spd[i, t] = max(0.0, self.spd[i, t-1] + self.acc[i, t-1] * 1) # unidad de tiempo (1s) 
 
-            if i == 0:
-                acc = self.a_max
-            else:
-                v = self.spd[i, t]
-                s = self.pos[i-1, t] - self.pos[i, t] - self.car_length
+            # Cuanto voy a acelerar en este período según la posición y velocidad del auto que tengo adelante. IDM Model.
+            v = self.spd[i, t]
+            s = self.pos[i-1, t] - self.pos[i, t] - self.car_length
 
+            # Si soy el lider, acelero sin tener en cuenta al auto de adelante (no hay auto de adelante)
+            if i == 0:
+                acc = self.a_max * (1 - (v / v_0) ** self.delta)
+            # Si no, acelero teniendo en cuenta mi distancia con el conductor de adelante y a cuantos segundos quiero estar del mismo, la velocidad deseada, y mas parámetros del modelo.
+            else:
                 s_star = self.s_0 + v*self.headway[i] + (v * (v - self.spd[i-1, t])) / (2*np.sqrt(self.a_max*self.b))
                 acc = self.a_max * (1 - (v / v_0) ** self.delta - (s_star / s) ** 2)
             
-            if acc + self.spd[i,t] > v_0:
-                acc = v_0 - self.spd[i,t]
+            # Si me paso de la máxima, acelero hasta llegar a la máxima y nada mas (a chequear, ya debería estar contemplado en la formula.)
+            # if acc + self.spd[i,t] > v_0:
+            #     acc = v_0 - self.spd[i,t]
             
-            acc_noise = np.random.normal(loc=0, scale=0.25)
+            # Límites físicos de la aceleración:
+            if acc < - 4:
+                acc = -4
+            elif acc > 2:
+                acc = 2
+
+            # Ruido en la aceleración
+            # acc_noise = np.random.normal(loc=0, scale=0.25)
+
+            # Distracciones y actualización de la matriz.
             indicadora = np.random.uniform(low=0, high=1)
             lm = 0.0001
 
             if indicadora < lm:
-                magnitud = np.random.normal(loc=0, scale=1) 
-                if acc + magnitud + acc_noise < -8:
-                    self.acc[i,t] = -8
-                else:
-                    self.acc[i,t] = acc + acc_noise + magnitud
+                self.acc[i,t] = self.acc[i, t-1] # Me distraje y no modifiqué mi aceleración anterior.
             else:
-                if acc + acc_noise < -8:
-                    self.acc[i,t] = -8
-                else:
-                    self.acc[i,t] = acc + acc_noise
+                self.acc[i,t] = acc # Modifico la aceleracion acorde al modelo.
 
             if i != 0 and i not in self.collisioned_agents:
                 if self.pos[i-1,t] - self.car_length <= self.pos[i,t]:
                     print("Choque de "+ str(i) + " con " + str(i-1) + " en t="+str(t))  # Choque leve < 13.88
-
                     self.collisioned_agents.add(i)
                     self.collisioned[i-1] = t              
                     self.collisioned[i] = t
-                    
                     self.collisions += 1
 
             if self.pos[i, t] >= 15500 and i not in self.arrived:
