@@ -38,6 +38,7 @@ class RoadSimulation:
 
     def update(self, t):
         i = 0
+        chocados_test = set()
         while i < len(self.pos[:,t]):
             
             # velocidad deseada v_0
@@ -62,10 +63,10 @@ class RoadSimulation:
             
             acc_noise = np.random.normal(loc=0, scale=0.25)
             indicadora = np.random.uniform(low=0, high=1)
-            lm = 0.0001
+            lm = 0.001
 
             if indicadora < lm:
-                magnitud = np.random.normal(loc=0, scale=1) 
+                magnitud = np.random.normal(loc=0, scale=1.5) 
                 self.acc[i,t] = acc + acc_noise + magnitud
             else:
                 self.acc[i,t] = acc + acc_noise
@@ -74,9 +75,11 @@ class RoadSimulation:
             if acc < -8:
                 print("Mucho frenado de " + str(i) + " en t=" + str(t))
 
-            if i != 0:
+            if i != 0 and i not in chocados_test:
                 if self.pos[i-1,t] < self.pos[i,t]:
                     print("Choque de "+ str(i) + " con " + str(i-1) + " en t="+str(t))
+                    chocados_test.add(i)
+                    chocados_test.add(i-1)
 
             if self.pos[i, t] >= 15500 and i not in self.arrived:
                 self.time_out.append(t)
@@ -106,23 +109,24 @@ class RoadSimulation:
         time_in = np.array(self.time_in[:time_out.shape[0]])
         
         travel_time = time_out - time_in
-
         avg_travel_time = np.mean(travel_time)
 
         return avg_travel_time
 
     def get_avg_travel_speed(self):
-        sum = 0
-        for i, row in enumerate(self.spd):
-            spd_agent = row[self.time_in[i]:self.time_out[i]+1]
-            sum += np.mean(spd_agent)
+        sum_spd = 0
 
-        return np.mean(sum)
+        for i in range(len(self.arrived)):
+            spd_agent = self.spd[i][self.time_in[i]:self.time_out[i]+1]
+            sum_spd += np.mean(spd_agent)
+
+        return sum_spd / len(self.time_out)
 
     def get_avg_travel_acce(self):
-        sum = 0
-        for i, row in enumerate(self.spd):
-            acc_agent = row[self.time_in[i]:self.time_out[i]+1]
-            sum += np.mean(acc_agent)
+        sum_acc = 0
 
-        return np.mean(sum)
+        for i in range(len(self.arrived)):
+            spd_agent = self.acc[i][self.time_in[i]:self.time_out[i]+1]
+            sum_acc += np.mean(spd_agent)
+
+        return sum_acc / len(self.time_out)
