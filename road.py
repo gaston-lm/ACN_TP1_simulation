@@ -62,12 +62,8 @@ class RoadSimulation:
                 acc = self.a_max * (1 - (v / v_0) ** self.delta)
             # Si no, acelero teniendo en cuenta mi distancia con el conductor de adelante y a cuantos segundos quiero estar del mismo, la velocidad deseada, y mas parámetros del modelo.
             else:
-                s_star = self.s_0 + v*self.headway[i] + (v * (v - self.spd[i-1, t])) / (2*np.sqrt(self.a_max*self.b))
+                s_star = self.s_0 + v * self.headway[i] + (v * (v - self.spd[i-1, t])) / (2 * np.sqrt(self.a_max * self.b))
                 acc = self.a_max * (1 - (v / v_0) ** self.delta - (s_star / s) ** 2)
-            
-            # Si me paso de la máxima, acelero hasta llegar a la máxima y nada mas (a chequear, ya debería estar contemplado en la formula.)
-            # if acc + self.spd[i,t] > v_0:
-            #     acc = v_0 - self.spd[i,t]
             
             # Límites físicos de la aceleración:
             if acc < - 4:
@@ -75,12 +71,9 @@ class RoadSimulation:
             elif acc > 2:
                 acc = 2
 
-            # Ruido en la aceleración
-            # acc_noise = np.random.normal(loc=0, scale=0.25)
-
             # Distracciones y actualización de la matriz.
             indicadora = np.random.uniform(low=0, high=1)
-            lm = 0.0001
+            lm = 0.001
 
             if indicadora < lm:
                 self.acc[i,t] = self.acc[i, t-1] # Me distraje y no modifiqué mi aceleración anterior.
@@ -109,9 +102,8 @@ class RoadSimulation:
 
         while t < self.time_limit:
             self.update(t)
-            p = np.random.random(size=1)
             # Con alguna proba entra un auto nuevo:
-            if p > 0.5:
+            if t % 2 == 0:
                 self.enter(agents_enter, t)
                 agents_enter += 1
             
@@ -145,4 +137,4 @@ class RoadSimulation:
         return sum_acc / len(self.time_out)
 
     def get_collisions(self):
-        return self.collisions()
+        return self.collisions
