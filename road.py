@@ -1,14 +1,13 @@
 import numpy as np
 
 class RoadSimulation:
-    def __init__(self, time_limit, delta_t, a_max, b, delta, s_0, car_length):
+    def __init__(self, time_limit, a_max, b, delta, s_0, car_length):
         # Public
         self.time_limit = time_limit
 
         self.pos = np.zeros((1,time_limit))
         self.acc = np.zeros((1,time_limit))
         self.spd = np.zeros((1,time_limit))
-        self.delta_t = delta_t
         self.a_max = a_max
         self.delta = delta
         self.b = b
@@ -46,17 +45,13 @@ class RoadSimulation:
         i = 0
 
         while i < len(self.pos[:,t]):
-            if self.collisioned[i] != -1 and t - self.collisioned[i] < 30:
-                i += 1
-                continue
-
             # velocidad deseada v_0
             v_0 = 22.22 
             if self.pos[i, t-1] > 13000:
                 v_0 = 27.77
             
-            self.pos[i, t] = self.pos[i, t-1] + self.spd[i, t-1] * self.delta_t
-            self.spd[i, t] = max(0.0, self.spd[i, t-1] + self.acc[i, t-1] * self.delta_t)
+            self.pos[i, t] = self.pos[i, t-1] + self.spd[i, t-1] * 1 # unidad de tiempo (1s)
+            self.spd[i, t] = max(0.0, self.spd[i, t-1] + self.acc[i, t-1] * 1) # unidad de tiempo (1s) 
 
             if i == 0:
                 acc = self.a_max
@@ -72,16 +67,16 @@ class RoadSimulation:
             
             acc_noise = np.random.normal(loc=0, scale=0.25)
             indicadora = np.random.uniform(low=0, high=1)
-            lm = 0.001
+            lm = 0.0001
 
             if indicadora < lm:
-                magnitud = np.random.normal(loc=0, scale=1.5) 
-                if acc + magnitud + acc_noise > -8:
+                magnitud = np.random.normal(loc=0, scale=1) 
+                if acc + magnitud + acc_noise < -8:
                     self.acc[i,t] = -8
                 else:
                     self.acc[i,t] = acc + acc_noise + magnitud
             else:
-                if acc + acc_noise > -8:
+                if acc + acc_noise < -8:
                     self.acc[i,t] = -8
                 else:
                     self.acc[i,t] = acc + acc_noise
@@ -89,11 +84,6 @@ class RoadSimulation:
             if i != 0 and i not in self.collisioned_agents:
                 if self.pos[i-1,t] - self.car_length <= self.pos[i,t]:
                     print("Choque de "+ str(i) + " con " + str(i-1) + " en t="+str(t))  # Choque leve < 13.88
-
-                    self.spd[i-1,t] = 0
-                    self.spd[i,t] = 0
-                    self.acc[i-1,t] = 0
-                    self.acc[i,t] = 0
 
                     self.collisioned_agents.add(i)
                     self.collisioned[i-1] = t              
@@ -117,7 +107,7 @@ class RoadSimulation:
             self.update(t)
             p = np.random.random(size=1)
             # Con alguna proba entra un auto nuevo:
-            if p > 0.2:
+            if p > 0.5:
                 self.enter(agents_enter, t)
                 agents_enter += 1
             
