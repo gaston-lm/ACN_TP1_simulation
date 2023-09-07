@@ -57,7 +57,7 @@ class RoadSimulation:
                 acc = self.a_max
             else:
                 v = self.spd[i, t]
-                s = self.pos[i, t] - self.pos[i-1, t] - self.car_length
+                s = self.pos[i-1, t] - self.pos[i, t] - self.car_length
 
                 s_star = self.s_0 + v*self.headway[i] + (v * (v - self.spd[i-1, t])) / (2*np.sqrt(self.a_max*self.b))
                 acc = self.a_max * (1 - (v / v_0) ** self.delta - (s_star / s) ** 2)
