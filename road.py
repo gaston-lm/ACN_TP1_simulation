@@ -67,19 +67,33 @@ class RoadSimulation:
 
             if indicadora < lm:
                 magnitud = np.random.normal(loc=0, scale=1.5) 
-                self.acc[i,t] = acc + acc_noise + magnitud
+                if acc + magnitud + acc_noise > -8:
+                    self.acc[i,t] = -8
+                else:
+                    self.acc[i,t] = acc + acc_noise + magnitud
             else:
-                self.acc[i,t] = acc + acc_noise
-
-            # ver bien desp
-            if acc < -8:
-                print("Mucho frenado de " + str(i) + " en t=" + str(t))
+                if acc + acc_noise > -8:
+                    self.acc[i,t] = -8
+                else:
+                    self.acc[i,t] = acc + acc_noise
 
             if i != 0 and i not in chocados_test:
-                if self.pos[i-1,t] < self.pos[i,t]:
+                if self.pos[i-1,t]-self.car_length < self.pos[i,t]:
                     print("Choque de "+ str(i) + " con " + str(i-1) + " en t="+str(t))
                     chocados_test.add(i)
                     chocados_test.add(i-1)
+                    if self.spd[i,t] > 13.88:
+                        self.spd[i-1,t] = 0
+                        self.spd[i,t] = 0
+                        self.acc[i-1,t] = 0
+                        self.acc[i,t] = 0
+                    else:
+                        self.spd[i-1,t] = 0
+                        self.spd[i,t] = 0
+                        self.acc[i-1,t] = 0
+                        self.acc[i,t] = 0
+                        
+                        
 
             if self.pos[i, t] >= 15500 and i not in self.arrived:
                 self.time_out.append(t)
