@@ -2,6 +2,7 @@ import numpy as np
 
 class RoadSimulation:
     def __init__(self, time_limit, delta_t, a_max, b, delta, s_0, car_length):
+        # Public
         self.time_limit = time_limit
 
         self.pos = np.zeros((1,time_limit))
@@ -14,10 +15,14 @@ class RoadSimulation:
         self.s_0 = s_0
         self.car_length = car_length
 
+        # Private
         self.headway = []
         self.time_out = []
         self.time_in = []
+        self.collisioned = []
+        self.collisioned_agents = set()
         self.arrived = set()
+        self.collisions = 0
 
     def enter(self, a, t):
         if t != 0:
@@ -27,6 +32,7 @@ class RoadSimulation:
             self.spd = np.vstack((self.spd, new_agent))
         
         self.headway.append(np.random.lognormal(mean=0.15, sigma=0.22))
+        self.collisioned.append(-1)
 
         spd = np.random.uniform(low=8.33, high=11.11, size=1).item() # Entre 30 y 45 km/h
 
@@ -38,9 +44,12 @@ class RoadSimulation:
 
     def update(self, t):
         i = 0
-        chocados_test = set()
+
         while i < len(self.pos[:,t]):
-            
+            if self.collisioned[i] != -1 and t - self.collisioned[i] < 30:
+                i += 1
+                continue
+
             # velocidad deseada v_0
             v_0 = 22.22 
             if self.pos[i, t-1] > 13000:
@@ -77,28 +86,24 @@ class RoadSimulation:
                 else:
                     self.acc[i,t] = acc + acc_noise
 
-            if i != 0 and i not in chocados_test:
-                if self.pos[i-1,t]-self.car_length < self.pos[i,t]:
-                    print("Choque de "+ str(i) + " con " + str(i-1) + " en t="+str(t))
-                    chocados_test.add(i)
-                    chocados_test.add(i-1)
-                    if self.spd[i,t] > 13.88:
-                        self.spd[i-1,t] = 0
-                        self.spd[i,t] = 0
-                        self.acc[i-1,t] = 0
-                        self.acc[i,t] = 0
-                    else:
-                        self.spd[i-1,t] = 0
-                        self.spd[i,t] = 0
-                        self.acc[i-1,t] = 0
-                        self.acc[i,t] = 0
-                        
-                        
+            if i != 0 and i not in self.collisioned_agents:
+                if self.pos[i-1,t] - self.car_length <= self.pos[i,t]:
+                    print("Choque de "+ str(i) + " con " + str(i-1) + " en t="+str(t))  # Choque leve < 13.88
+
+                    self.spd[i-1,t] = 0
+                    self.spd[i,t] = 0
+                    self.acc[i-1,t] = 0
+                    self.acc[i,t] = 0
+
+                    self.collisioned_agents.add(i)
+                    self.collisioned[i-1] = t              
+                    self.collisioned[i] = t
+                    
+                    self.collisions += 1
 
             if self.pos[i, t] >= 15500 and i not in self.arrived:
                 self.time_out.append(t)
                 self.arrived.add(i)
-
 
             i += 1
 
@@ -112,7 +117,7 @@ class RoadSimulation:
             self.update(t)
             p = np.random.random(size=1)
             # Con alguna proba entra un auto nuevo:
-            if p > 0.5:
+            if p > 0.2:
                 self.enter(agents_enter, t)
                 agents_enter += 1
             
@@ -144,3 +149,6 @@ class RoadSimulation:
             sum_acc += np.mean(spd_agent)
 
         return sum_acc / len(self.time_out)
+
+    def get_collisions(self):
+        return self.collisions()
