@@ -15,6 +15,8 @@ class RoadSimulation:
         self.car_length = car_length
 
         # Private
+        # For each agent
+        self.dsr_spd = []
         self.headway = []
         # For results
         self.time_out = []
@@ -32,8 +34,12 @@ class RoadSimulation:
             self.acc = np.vstack((self.acc, new_agent))
             self.spd = np.vstack((self.spd, new_agent))
         
+        # Definimos variables de cada agente
         hdw = np.random.lognormal(mean=0.15, sigma=0.22)
         self.headway.append(hdw)
+        # desired_speed_for_agent = np.random
+        # self.dsr_spd.append
+
         self.collisioned.append(-1)
 
         self.pos[a,t] = 0.5
@@ -87,7 +93,7 @@ class RoadSimulation:
 
             if indicadora < lm:
                 # print("Uy me distraje en "+str(t) +", soy "+str(i))
-                self.acc[i,t] = np.random.normal(loc=0, scale=2) #self.acc[i, t-1] # Me distraje y no modifiqué mi aceleración anterior.
+                self.acc[i,t] = np.random.normal(loc=0, scale=2) # self.acc[i, t-1] # Me distraje y no modifiqué mi aceleración anterior.
             else:
                 self.acc[i,t] = acc # Modifico la aceleracion acorde al modelo.
 
