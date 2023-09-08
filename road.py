@@ -16,11 +16,13 @@ class RoadSimulation:
 
         # Private
         self.headway = []
+        # For results
         self.time_out = []
         self.time_in = []
+        self.arrived = set()
+        # To handdle collisions
         self.collisioned = []
         self.collisioned_agents = set()
-        self.arrived = set()
         self.collisions = 0
 
     def enter(self, a, t):
@@ -30,14 +32,23 @@ class RoadSimulation:
             self.acc = np.vstack((self.acc, new_agent))
             self.spd = np.vstack((self.spd, new_agent))
         
-        self.headway.append(np.random.lognormal(mean=0.15, sigma=0.22))
+        hdw = np.random.lognormal(mean=0.15, sigma=0.22)
+        self.headway.append(hdw)
         self.collisioned.append(-1)
 
-        spd = np.random.uniform(low=8.33, high=11.11, size=1).item() # Entre 30 y 45 km/h
+        self.pos[a,t] = 0.5
 
-        self.pos[a,t] = 1
-        self.spd[a,t] = spd
-        self.acc[a,t] = 0
+        # defino acc segun quien veo adelante
+        if t == 0:
+            spd = np.random.uniform(low=8.33, high=9.72, size=1) # Entre 30 y 45 km/h
+            self.spd[a,t] = spd
+            self.acc[a,t] = self.a_max * (1 - (spd / 22.22) ** self.delta)
+        else:
+            spd = self.spd[a-1,t] + np.random.lognormal(mean=0,sigma=0.3)
+            self.spd[a,t] = spd
+            s = self.pos[a-1, t] - 1 - self.car_length
+            s_star = self.s_0 + spd * hdw + (spd * (spd - self.spd[a-1, t])) / (2 * np.sqrt(self.a_max * self.b))
+            self.acc[a,t] = self.a_max * (1 - (spd / 22.22) ** self.delta - (s_star / s) ** 2)
 
         self.time_in.append(t)
 
@@ -55,39 +66,62 @@ class RoadSimulation:
 
             # Cuanto voy a acelerar en este período según la posición y velocidad del auto que tengo adelante. IDM Model.
             v = self.spd[i, t]
-            s = self.pos[i-1, t] - self.pos[i, t] - self.car_length
-
             # Si soy el lider, acelero sin tener en cuenta al auto de adelante (no hay auto de adelante)
             if i == 0:
                 acc = self.a_max * (1 - (v / v_0) ** self.delta)
             # Si no, acelero teniendo en cuenta mi distancia con el conductor de adelante y a cuantos segundos quiero estar del mismo, la velocidad deseada, y mas parámetros del modelo.
             else:
+                s = self.pos[i-1, t] - self.pos[i, t] - self.car_length
                 s_star = self.s_0 + v * self.headway[i] + (v * (v - self.spd[i-1, t])) / (2 * np.sqrt(self.a_max * self.b))
                 acc = self.a_max * (1 - (v / v_0) ** self.delta - (s_star / s) ** 2)
             
             # Límites físicos de la aceleración:
-            if acc < - 4:
-                acc = -4
-            elif acc > 2:
-                acc = 2
+            if acc < - 4.0:
+                acc = -4.0
+            elif acc > 2.0:
+                acc = 2.0
 
             # Distracciones y actualización de la matriz.
             indicadora = np.random.uniform(low=0, high=1)
-            lm = 0.001
+            lm = 0.07
 
             if indicadora < lm:
-                self.acc[i,t] = self.acc[i, t-1] # Me distraje y no modifiqué mi aceleración anterior.
+                # print("Uy me distraje en "+str(t) +", soy "+str(i))
+                self.acc[i,t] = np.random.normal(loc=0, scale=2) #self.acc[i, t-1] # Me distraje y no modifiqué mi aceleración anterior.
             else:
                 self.acc[i,t] = acc # Modifico la aceleracion acorde al modelo.
 
+            # Manejo de colisiones
+
+            # Verificacion de choques pendientes
+            if self.collisioned[i] != -1 and t < self.collisioned[i]: # si este auto choco, verifico que el tiempo para frenar siga vigente para desacelerar manera realista
+                print("Soy " +str(i)+".Frené pq choque. me falta " + str(self.collisioned[i]-t))
+                if self.spd[i,t] > 0.5: # si aun me queda por frenar
+                    self.acc[i,t] = -self.b
+                else:
+                    self.acc[i,t] = 0
+
+                # le resto tiempo que aun tiene que esperar para comenzar de nuevo a andar
+                self.collisioned[i] -= 1
+            elif self.collisioned[i] == 0:
+                # Ya paso el tiempo, vuelve a arrancar
+                self.acc[i,t] = 1.67 # chquear
+                self.collisioned[i] = -1
+            
+            # identificación de choques
             if i != 0 and i not in self.collisioned_agents:
                 if self.pos[i-1,t] - self.car_length <= self.pos[i,t]:
+                    if self.pos[i,t-4] < 2:
+                        print("recien habia entrado y ya choque")
                     print("Choque de "+ str(i) + " con " + str(i-1) + " en t="+str(t))  # Choque leve < 13.88
-                    self.collisioned_agents.add(i)
-                    self.collisioned[i-1] = t              
-                    self.collisioned[i] = t
+                    # Registrar choque y agentes involucrados
                     self.collisions += 1
-
+                    self.collisioned_agents.add(i)
+                    self.collisioned_agents.add(i-1)
+                    self.collisioned[i] = t + (self.spd[i,t] // self.b) + 60 # sumamos tiempo que requerira frenarse por completo + tiempo para pasarse datos seguro
+                    self.collisioned[i-1] = t + (self.spd[i-1,t] // self.b) + 60    
+                  
+            # Registro de llegada de agentes
             if self.pos[i, t] >= 15500 and i not in self.arrived:
                 self.time_out.append(t)
                 self.arrived.add(i)
@@ -103,7 +137,8 @@ class RoadSimulation:
         while t < self.time_limit:
             self.update(t)
             # Con alguna proba entra un auto nuevo:
-            if t % 2 == 0:
+            # if t % 2 == 0:
+            if self.pos[agents_enter-1,t] > 10:
                 self.enter(agents_enter, t)
                 agents_enter += 1
             
