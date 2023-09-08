@@ -22,7 +22,7 @@ class RoadSimulation:
         self.id_first_agent_to_consider = -1
 
         # Private
-        
+
         # For each agent
         self.dsr_spd = []
         self.headway = []
@@ -34,6 +34,10 @@ class RoadSimulation:
         self.collisioned = []
         self.collisioned_agents = set()
         self.collisions = 0
+        # Results
+        self.avg_travel_time = 0
+        self.avg_travel_speed = 0
+        self.avg_travel_acc = 0
 
     def enter(self, a, t):
         if t != 0:
@@ -103,7 +107,7 @@ class RoadSimulation:
 
             # Distracciones y actualización de la matriz.
             indicadora = np.random.uniform(low=0, high=1)
-            lm = 0.07
+            lm = 0.1
 
             if indicadora < lm:
                 # print("Uy me distraje en "+str(t) +", soy "+str(i))
@@ -172,32 +176,40 @@ class RoadSimulation:
             
             t += 1
     
-    def get_avg_travel_time(self):
-        time_out = np.array(self.time_out)
-        time_in = np.array(self.time_in[:time_out.shape[0]])
-        
-        travel_time = time_out - time_in
+    def generete_results(self):
+        self.time_out = np.array(self.time_out)
+        self.time_in = np.array(self.time_in[:self.time_out.shape[0]])
+
+        # Calcular tiempo promedio de viaje
+        travel_time = self.time_out - self.time_in
         avg_travel_time = np.mean(travel_time)
 
-        return avg_travel_time
+        self.avg_travel_time = avg_travel_time
 
-    def get_avg_travel_speed(self):
+        # Calcular velocidad promedio
         sum_spd = 0
-
-        for i in range(len(self.arrived)):
-            spd_agent = self.spd[i][self.time_in[i]:self.time_out[i]+1]
+        for i in range(len(self.time_out)):
+            spd_agent = self.spd[self.id_first_agent_to_consider + i][self.time_in[i]:self.time_out[i]]
             sum_spd += np.mean(spd_agent)
 
-        return sum_spd / len(self.time_out)
+        self.avg_travel_speed = sum_spd / len(self.time_out)
+
+        # Calcular aceleración promedio
+        sum_acc = 0
+        for i in range(len(self.time_out)):
+            acc_agent = self.acc[self.id_first_agent_to_consider + i][self.time_in[i]:self.time_out[i]]
+            sum_acc += np.mean(acc_agent)
+
+        self.avg_travel_acc = sum_acc / len(self.time_out)
+        
+    def get_avg_travel_time(self):
+        return self.avg_travel_time
+
+    def get_avg_travel_speed(self):
+        return self.avg_travel_speed
 
     def get_avg_travel_acce(self):
-        sum_acc = 0
-
-        for i in range(len(self.arrived)):
-            spd_agent = self.acc[i][self.time_in[i]:self.time_out[i]+1]
-            sum_acc += np.mean(spd_agent)
-
-        return sum_acc / len(self.time_out)
+        return self.avg_travel_acc
 
     def get_collisions(self):
         return self.collisions
