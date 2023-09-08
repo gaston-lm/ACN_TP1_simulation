@@ -28,13 +28,13 @@ class Agent:
         self.v_t_prev = 0
         self.a_t_prev = 0
 
-        self.is_leader = False
+        self.im_leader = False
 
     def make_leader(self):
         self.is_leader = True
     
     def is_leader(self):
-        return self.is_leader
+        return self.im_leader
     
     def update_agent(self, leader):
         # Guardo los valores del t antes de actualizar.
@@ -53,7 +53,7 @@ class Agent:
         if self.is_leader():
             acc = self.a * (1 - (self.v_t / self.d_v) ** self.delta)
         else:
-            acc = self.a * (1 - (self.v_t / self.d_v) ** self.delta - (self.m_s + self.v_t * self.T + ((self.v_t * (self.v_t - leader.v_t_prev)) / 2 * math.sqrt(self.a * self.t)) / leader.x_t_prev - self.x_t - leader.l) ** 2)
+            acc = self.a * (1 - (self.v_t / self.d_v) ** self.delta - (self.m_s + self.v_t * self.T + (((self.v_t * (self.v_t - leader.v_t_prev)) / 2 * math.sqrt(self.a * self.b)) / (leader.x_t_prev - self.x_t - leader.l)) ** 2))
 
         # Tengo en cuenta los límites físicos de aceleración y des-aceleración.
         if acc < -self.b:
@@ -70,9 +70,44 @@ class Agent:
 
 
 class NewRoadSim:
-    def __init__(self, desired_velocity, minimum_spacing, headway, acceleration, braking_desacceleration, vehicle_length, delta):
+    def __init__(self, time_limit, minimum_spacing, acceleration, braking_desacceleration, vehicle_length, delta):
         self.lane = []
         self.arrived = []
 
-    def initialize_random_road(self):
-        pass
+        self.time_limit = time_limit
+        self.minimum_spacing = minimum_spacing
+        self.max_acceleration = acceleration
+        self.braking_desacceleration = braking_desacceleration
+        self.vehicle_length = vehicle_length
+        self.delta = delta
+
+    def enter(self, agent):
+        if len(self.lane) == 0:
+            agent.make_leader()
+        
+        self.lane.append(agent)
+    
+    def simulate(self):
+        # Inicializo la lane con un leader:
+        d_v = 22.22
+        T = 2
+        initial_t = 0
+        leader = Agent(d_v, self.minimum_spacing, T, self.max_acceleration, self.braking_desacceleration, self.vehicle_length, self.delta, initial_t)
+        self.lane.append(leader)
+
+        # Van ingresando los demás autos:
+        t = 1
+        while t < self.time_limit:
+            for i, agent in enumerate(self.lane):
+                if agent.is_leader():
+                    agent.update_agent(agent)
+                    self.lane[i] = agent
+                else:
+                    agent.update_agent(self.lane[i-1])
+                    self.lane[i] = agent
+
+            if t % 2 == 0:
+                new_agent = Agent(d_v, self.minimum_spacing, T, self.max_acceleration, self.braking_desacceleration, self.vehicle_length, self.delta, initial_t)
+                self.enter(new_agent)
+
+            t += 1
