@@ -14,7 +14,15 @@ class RoadSimulation:
         self.s_0 = s_0
         self.car_length = car_length
 
+        # Para calcular stats después que llegó el primer auto
+
+        # Flag de primer auto llegó
+        self.flag_first_arrived = False
+        # Id del primer 
+        self.id_first_agent_to_consider = -1
+
         # Private
+        
         # For each agent
         self.dsr_spd = []
         self.headway = []
@@ -26,6 +34,7 @@ class RoadSimulation:
         self.collisioned = []
         self.collisioned_agents = set()
         self.collisions = 0
+
 
     def enter(self, a, t):
         if t != 0:
@@ -120,9 +129,21 @@ class RoadSimulation:
         i = 0
         while i < len(self.pos[:,t]):
             # Velocidad deseada del conductor (máxima de gral. paz ¿+ ruido?)
-            v_0 = 22.22 
+            v_0 = self.dsr_spd[i]
             if self.pos[i, t-1] > 13000:
-                v_0 = 27.77
+                diferencia = 22.22 - v_0 # si v_0 > 22.22 le gusta ir más rápido, su nueva v_0 también es mayor q 27.77
+                v_0 = 27.77 - diferencia 
+            
+            # Chequeo si el auto esta por llegar a una entrada
+            interceptions = [
+                (800, 1000), (1800, 2000), (2400, 2600), 
+                (3500, 3700), (6600, 6700), (7500, 7700), 
+                (9700, 9900), (11500, 13500)
+            ] # Lista de todas las intercepciones en los primeros 13.000 metros (hasta acceso norte)
+
+            if any(start < self.pos[i, t-1] < end for start, end in interceptions):
+                diferencia = 22.2 - v_0 
+                v_0 = 15.27 - diferencia
             
             # Actualización de la posición y velocidad en el segundo t. Física, no es una decisión del agente.
             self.pos[i, t] = self.pos[i, t-1] + self.spd[i, t-1] * 1 # unidad de tiempo (1s)
