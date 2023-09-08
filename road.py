@@ -14,7 +14,15 @@ class RoadSimulation:
         self.s_0 = s_0
         self.car_length = car_length
 
+        # Para calcular stats después que llegó el primer auto
+
+        # Flag de primer auto llegó
+        self.flag_first_arrived = False
+        # Id del primer 
+        self.id_first_agent_to_consider = -1
+
         # Private
+        
         # For each agent
         self.dsr_spd = []
         self.headway = []
@@ -37,8 +45,8 @@ class RoadSimulation:
         # Definimos variables de cada agente
         hdw = np.random.lognormal(mean=0.15, sigma=0.22)
         self.headway.append(hdw)
-        # desired_speed_for_agent = np.random
-        # self.dsr_spd.append
+        desired_speed_for_agent = np.random.normal(loc=20.27, scale=1)
+        self.dsr_spd.append(desired_speed_for_agent)
 
         self.collisioned.append(-1)
 
@@ -56,15 +64,21 @@ class RoadSimulation:
             s_star = self.s_0 + spd * hdw + (spd * (spd - self.spd[a-1, t])) / (2 * np.sqrt(self.a_max * self.b))
             self.acc[a,t] = self.a_max * (1 - (spd / 22.22) ** self.delta - (s_star / s) ** 2)
 
-        self.time_in.append(t)
+        # Registro entrada de autos a partir de llegado el primero
+        if self.flag_first_arrived:
+            self.time_in.append(t)
+            # Tomo agentes para salida a partir de este id (es el primero que se empieza a tener en cuenta)
+            if self.id_first_agent_to_consider == -1:
+                self.id_first_agent_to_consider = a
 
     def update(self, t):
         i = 0
         while i < len(self.pos[:,t]):
             # Velocidad deseada del conductor (máxima de gral. paz ¿+ ruido?)
-            v_0 = 22.22 
+            v_0 = self.dsr_spd[i]
             if self.pos[i, t-1] > 13000:
-                v_0 = 27.77
+                diferencia = 22.22 - v_0 # si v_0 > 22.22 le gusta ir más rápido, su nueva v_0 también es mayor q 27.77
+                v_0 = 27.77 - diferencia 
             
             # Actualización de la posición y velocidad en el segundo t. Física, no es una decisión del agente.
             self.pos[i, t] = self.pos[i, t-1] + self.spd[i, t-1] * 1 # unidad de tiempo (1s)
@@ -93,7 +107,7 @@ class RoadSimulation:
 
             if indicadora < lm:
                 # print("Uy me distraje en "+str(t) +", soy "+str(i))
-                self.acc[i,t] = np.random.normal(loc=0, scale=2) # self.acc[i, t-1] # Me distraje y no modifiqué mi aceleración anterior.
+                self.acc[i,t] = np.random.normal(loc=0, scale=1) # self.acc[i, t-1] # Me distraje y no modifiqué mi aceleración anterior.
             else:
                 self.acc[i,t] = acc # Modifico la aceleracion acorde al modelo.
 
@@ -129,8 +143,16 @@ class RoadSimulation:
                   
             # Registro de llegada de agentes
             if self.pos[i, t] >= 15500 and i not in self.arrived:
-                self.time_out.append(t)
-                self.arrived.add(i)
+                if i == 0:
+                    self.flag_first_arrived = True
+                    self.arrived.add(i)
+                    print("El primero llego en t="+str(t))
+                    print("Cantidad de autos ahi: "+str(len(self.pos[:,t])))
+                else:
+                    if self.id_first_agent_to_consider <= i:
+                        print(i,t)
+                        self.time_out.append(t)
+                        self.arrived.add(i)
 
             i += 1
 
