@@ -121,6 +121,7 @@ class RoadSimulation:
             # Ya paso el tiempo, vuelve a arrancar
             self.acc[i,t] = 1.67 # Chequear
             self.collisioned[i] = -1
+            self.collisioned_agents.remove(i)
             
     def identify_colision(self, i, t):
         if i != 0 and i not in self.collisioned_agents:
@@ -146,19 +147,19 @@ class RoadSimulation:
                 v_0 = 27.77 - diferencia 
 
             # Chequeo si el auto esta por llegar a una entrada
-            # interceptions = [
-            #     (800, 900), (1800, 1900), (2400, 2500), 
-            #     (3500, 3600), (6600, 6700), (7500, 7600), 
-            #     (9700, 9800), (11500, 12500)
-            # ] # Lista de todas las intercepciones en los primeros 13.000 metros (hasta acceso norte)
+            interceptions = [
+                (800, 900), (1800, 1900), (2400, 2500), 
+                (3500, 3600), (6600, 6700), (7500, 7600), 
+                (9700, 9800), (11500, 12500)
+            ] # Lista de todas las intercepciones en los primeros 13.000 metros (hasta acceso norte)
 
-            # if any(start < self.pos[i, t-1] < end for start, end in interceptions):
-            #     diferencia = 22.2 - v_0 
-            #     v_0 = 15.27 - diferencia
+            if any(start < self.pos[i, t-1] < end for start, end in interceptions):
+                diferencia = 22.2 - v_0 
+                v_0 = 15.27 - diferencia
 
-            # if 13500 < self.pos[i, t-1] < 13530:
-            #     diferencia = 27.77 - v_0 
-            #     v_0 = 15.27 - diferencia
+            if 13500 < self.pos[i, t-1] < 13530:
+                diferencia = 27.77 - v_0 
+                v_0 = 15.27 - diferencia
             
             # Actualización de la posición y velocidad en el segundo t. Física, no es una decisión del agente.
             self.pos[i, t] = self.pos[i, t-1] + self.spd[i, t-1] * 1 # unidad de tiempo (1s)
@@ -194,8 +195,9 @@ class RoadSimulation:
 
         while t < self.time_limit:
             self.update(t)
-            # Con alguna proba entra un auto nuevo:
-            if self.pos[agents_enter-1,t] > 10:
+            p = np.random.uniform(low=0, high=1, size=1).item()
+            umbral = 0 # 0: Horario pico, 0.5: Normal, 0.7 Madrugada
+            if self.pos[agents_enter-1,t] > 10 and p > umbral:
                 self.enter(agents_enter, t)
                 agents_enter += 1
             
