@@ -1,8 +1,9 @@
 import pygame
 import numpy as np
 import sys
+import random
 
-def run_animation(car_positions, scale=1.0, min_visible_x=0, max_visible_x=None, fps=10):
+def run_animation(car_positions, scale=1.0, min_visible_x=0, max_visible_x=None, fps=8):
     pygame.init()
 
     SCREEN_WIDTH = 1200
@@ -10,7 +11,6 @@ def run_animation(car_positions, scale=1.0, min_visible_x=0, max_visible_x=None,
     CAR_WIDTH = 15
     CAR_HEIGHT = 10
     ROAD_COLOR = (100, 100, 100)
-    CAR_COLOR = (0, 0, 0)
     FPS = fps
     Y_POSITION = (SCREEN_HEIGHT - CAR_HEIGHT) // 2
 
@@ -20,16 +20,20 @@ def run_animation(car_positions, scale=1.0, min_visible_x=0, max_visible_x=None,
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Car Simulation")
 
-    def draw_cars(x_coordinates):
-        for x in x_coordinates:
+    def draw_cars(x_coordinates, colors):
+        for x, color in zip(x_coordinates, colors):
             if 0.5 + min_visible_x <= x <= max_visible_x:
                 # Adjust the x-coordinate for scale and visibility
                 adjusted_x = int((x - min_visible_x) * scale)
-                pygame.draw.rect(screen, CAR_COLOR, (adjusted_x, Y_POSITION, CAR_WIDTH, CAR_HEIGHT))
+                pygame.draw.rect(screen, color, (adjusted_x, Y_POSITION, CAR_WIDTH, CAR_HEIGHT))
 
     clock = pygame.time.Clock()
     running = True
     time_step = 0
+
+    num_cars = len(car_positions)  # Get the number of cars
+    # Generate a list of random colors for each car
+    car_colors = [(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)) for _ in range(num_cars)]
 
     while running:
         for event in pygame.event.get():
@@ -44,8 +48,8 @@ def run_animation(car_positions, scale=1.0, min_visible_x=0, max_visible_x=None,
         # Convert float positions to integers
         current_positions = current_positions.astype(float)
 
-        # Draw the cars
-        draw_cars(current_positions)
+        # Draw the cars with their respective random colors
+        draw_cars(current_positions, car_colors)
 
         # Increment time step
         time_step = (time_step + 1) % car_positions.shape[1]
@@ -56,10 +60,9 @@ def run_animation(car_positions, scale=1.0, min_visible_x=0, max_visible_x=None,
     pygame.quit()
     sys.exit()
 
-
-car_positions = np.load("test.npy")  # Load your numpy array
+car_positions = np.load("test_con_choques.npy")  # Load your numpy array
 # Correr toda la Av. Gral Paz entre Liniers y Lugones
 # run_animation(car_positions)
 
 # Correr zoomeado en un lugar:
-run_animation(car_positions, scale=2.0, min_visible_x=0, max_visible_x=2500, fps=5)
+run_animation(car_positions, scale=2.0, min_visible_x=0, max_visible_x=1500, fps=5)
