@@ -8,8 +8,8 @@ def run_animation(car_positions, scale=1.0, min_visible_x=0, max_visible_x=None,
 
     SCREEN_WIDTH = 1200
     SCREEN_HEIGHT = 600
-    CAR_WIDTH = 15
-    CAR_HEIGHT = 10
+    CAR_WIDTH = 8
+    CAR_HEIGHT = 4
     ROAD_COLOR = (100, 100, 100)
     FPS = fps
     Y_POSITION = (SCREEN_HEIGHT - CAR_HEIGHT) // 2
@@ -19,6 +19,9 @@ def run_animation(car_positions, scale=1.0, min_visible_x=0, max_visible_x=None,
 
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Car Simulation")
+
+    # Load a font for displaying the time step
+    font = pygame.font.Font(None, 36)
 
     def draw_cars(x_coordinates, colors):
         for x, color in zip(x_coordinates, colors):
@@ -51,6 +54,10 @@ def run_animation(car_positions, scale=1.0, min_visible_x=0, max_visible_x=None,
         # Draw the cars with their respective random colors
         draw_cars(current_positions, car_colors)
 
+        # Display the current time step as text
+        time_text = font.render(f"Time: {time_step}", True, (255, 255, 255))
+        screen.blit(time_text, (10, 10))  # Position of the text
+
         # Increment time step
         time_step = (time_step + 1) % car_positions.shape[1]
 
@@ -60,9 +67,9 @@ def run_animation(car_positions, scale=1.0, min_visible_x=0, max_visible_x=None,
     pygame.quit()
     sys.exit()
 
-car_positions = np.load("test_con_choques.npy")  # Load your numpy array
+car_positions = np.load("exp/otros/5000s_ruido_entradas.npy")  # Load your numpy array
 # Correr toda la Av. Gral Paz entre Liniers y Lugones
-# run_animation(car_positions)
+run_animation(car_positions, fps=20)
 
 # Correr zoomeado en un lugar:
-run_animation(car_positions, scale=2.0, min_visible_x=0, max_visible_x=1500, fps=5)
+# run_animation(car_positions, scale=2.0, min_visible_x=1000, max_visible_x=4000, fps=18)

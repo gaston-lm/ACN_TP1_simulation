@@ -77,6 +77,14 @@ class RoadSimulation:
             # Tomo agentes para salida a partir de este id (es el primero que se empieza a tener en cuenta)
             if self.id_first_agent_to_consider == -1:
                 self.id_first_agent_to_consider = a
+    
+    def update_pos(self, i, t):
+        pos_noise = np.random.normal(loc=0,scale=0.7)
+        self.pos[i, t] = self.pos[i, t-1] + self.spd[i, t-1] * 1 + pos_noise # unidad de tiempo (1s)
+
+    def update_spd(self, i, t):
+        spd_noise = np.random.normal(loc=0,scale=0.3)
+        self.spd[i, t] = max(0.0, self.spd[i, t-1] + self.acc[i, t-1] * 1 + spd_noise) # unidad de tiempo (1s) 
 
     def update_acc(self, i, t, v_0):
         v = self.spd[i, t]
@@ -95,17 +103,59 @@ class RoadSimulation:
         elif acc > 2.0:
             acc = 2.0
 
+        # Ruido acc
+        acc_noise = np.random.normal(loc=0,scale=0.5)
+
         # Distracciones y actualización de la matriz.
 
         indicadora = np.random.uniform(low=0, high=1)
-        lm = 0.07
+        lm = 0.02
 
         if indicadora < lm:
             # print("Uy me distraje en "+str(t) +", soy "+str(i))
             self.acc[i,t] = self.acc[i, t-1] # Me distraje y no modifiqué mi aceleración anterior.
         else:
-            self.acc[i,t] = acc # Modifico la aceleracion acorde al modelo.
+            self.acc[i,t] = acc + acc_noise # Modifico la aceleracion acorde al modelo.
 
+    def dsr_spd_based_on_pos(self, i, t, v_0):
+        new_v_0 = v_0
+        # Si pasó Acceso Norte, dónde la velocidad máxima pasa 100km/h
+        if self.pos[i, t-1] > 13000:
+            diferencia = 22.22 - v_0 # Si v_0 > 22.22 le gusta ir más rápido, su nueva v_0 también es mayor que 27.77.
+            new_v_0 = 27.77 - diferencia 
+
+        # Chequeo si el auto esta por llegar a una entrada
+        # interceptions = [
+        #     (800, 900), (1800, 1900), (2400, 2500), 
+        #     (3500, 3600), (6600, 6700), (7500, 7600), 
+        #     (9700, 9800), (11500, 12500)
+        # ] # Lista de todas las intercepciones en los primeros 13.000 metros (hasta acceso norte)
+
+        entradas = [(2500, 2700), (4300,4500),(5900, 6100),(7400, 7800),(12500, 12700)]
+
+        if any(start < self.pos[i, t-1] < end for start, end in entradas):
+            diferencia = 22.2 - v_0 
+            new_v_0 = 18.5 - diferencia
+
+        # if 13500 < self.pos[i, t-1] < 13530:
+        #     diferencia = 27.77 - v_0 
+        #     v_0 = 16.67 - diferencia
+
+        return new_v_0
+    
+    def dsr_spd_change(self, i, t):
+        # Calculamos su desird speed basado en sus caracteristicas de conductor + pos
+        v_0 = self.dsr_spd_based_on_pos(i, t, self.dsr_spd[i])
+
+        # Con cieta proba le sumamos ruido
+        p = np.random.uniform(low=0, high=1)
+        v_0_noise = 0
+        
+        if p > 0.5:
+            v_0_noise = np.random.normal(loc=0, scale=1.5)
+
+        return v_0 + v_0_noise
+    
     def verify_colision(self, i, t):
         if self.collisioned[i] != -1 and t < self.collisioned[i]: # Si este auto choco, verifico que el tiempo para frenar siga vigente para desacelerar manera realista
             print("Soy " + str(i) + ". Frené por choque. Me falta " + str(self.collisioned[i]-t))
@@ -140,36 +190,15 @@ class RoadSimulation:
     def update(self, t):
         i = 0
         while i < len(self.pos[:,t]):
-            # Velocidad deseada del conductor (máxima de gral. paz ¿+ ruido?)
-            v_0 = self.dsr_spd[i]
-            if self.pos[i, t-1] > 13000:
-                diferencia = 22.22 - v_0 # Si v_0 > 22.22 le gusta ir más rápido, su nueva v_0 también es mayor que 27.77.
-                v_0 = 27.77 - diferencia 
-
-            # Chequeo si el auto esta por llegar a una entrada
-            # interceptions = [
-            #     (800, 900), (1800, 1900), (2400, 2500), 
-            #     (3500, 3600), (6600, 6700), (7500, 7600), 
-            #     (9700, 9800), (11500, 12500)
-            # ] # Lista de todas las intercepciones en los primeros 13.000 metros (hasta acceso norte)
-            interceptions = [
-                (800, 900),(2400, 2500), 
-                (6600, 6700),(7500, 7600),(11500, 12500)
-            ]
-
-            if any(start < self.pos[i, t-1] < end for start, end in interceptions):
-                diferencia = 22.2 - v_0 
-                v_0 = 18 - diferencia
-
-            # if 13500 < self.pos[i, t-1] < 13530:
-            #     diferencia = 27.77 - v_0 
-            #     v_0 = 16.67 - diferencia
+            # Velocidad deseada del conductor dado por sus caracteristicas + max_spd en ese lugar + ruido
+            v_0 = self.dsr_spd_change(i, t)
             
             # Actualización de la posición y velocidad en el segundo t. Física, no es una decisión del agente.
-            self.pos[i, t] = self.pos[i, t-1] + self.spd[i, t-1] * 1 # unidad de tiempo (1s)
-            self.spd[i, t] = max(0.0, self.spd[i, t-1] + self.acc[i, t-1] * 1) # unidad de tiempo (1s) 
-
-            self.update_acc(i, t, v_0) # Actualización de la aceleración
+            self.update_pos(i, t)
+            self.update_spd(i, t)
+            
+            # Actualización de la aceleración
+            self.update_acc(i, t, v_0)
 
             # Manejo las colisiones
 
@@ -200,7 +229,20 @@ class RoadSimulation:
         while t < self.time_limit:
             self.update(t)
             p = np.random.uniform(low=0, high=1, size=1).item()
-            umbral = 0 # 0: Horario pico, 0.5: Normal, 0.7 Madrugada
+            umbral = 0.4 # 0: Horario pico, 0.5: Normal, 0.7 Madrugada
+            if 800 < t < 4400: # de 5 a 6
+                umbral = 0.8
+            elif 4400 < t < 8000: # de 6 a 7
+                umbral = 0.5
+            elif 8000 < t < 11600: # de 7 a 8
+                umbral = 0
+            elif 11600 < t < 15200: # de 8 a 9
+                umbral = 0.2
+            elif 15200 < t < 18800: # de 9 a 10
+                umbral = 0.3
+            else:
+                umbral = 0.5
+
             if self.pos[agents_enter-1,t] > 10 and p > umbral:
                 self.enter(agents_enter, t)
                 agents_enter += 1
