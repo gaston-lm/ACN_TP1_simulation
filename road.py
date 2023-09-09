@@ -147,19 +147,23 @@ class RoadSimulation:
                 v_0 = 27.77 - diferencia 
 
             # Chequeo si el auto esta por llegar a una entrada
+            # interceptions = [
+            #     (800, 900), (1800, 1900), (2400, 2500), 
+            #     (3500, 3600), (6600, 6700), (7500, 7600), 
+            #     (9700, 9800), (11500, 12500)
+            # ] # Lista de todas las intercepciones en los primeros 13.000 metros (hasta acceso norte)
             interceptions = [
-                (800, 900), (1800, 1900), (2400, 2500), 
-                (3500, 3600), (6600, 6700), (7500, 7600), 
-                (9700, 9800), (11500, 12500)
-            ] # Lista de todas las intercepciones en los primeros 13.000 metros (hasta acceso norte)
+                (800, 900),(2400, 2500), 
+                (6600, 6700),(7500, 7600),(11500, 12500)
+            ]
 
             if any(start < self.pos[i, t-1] < end for start, end in interceptions):
                 diferencia = 22.2 - v_0 
-                v_0 = 15.27 - diferencia
+                v_0 = 18 - diferencia
 
-            if 13500 < self.pos[i, t-1] < 13530:
-                diferencia = 27.77 - v_0 
-                v_0 = 15.27 - diferencia
+            # if 13500 < self.pos[i, t-1] < 13530:
+            #     diferencia = 27.77 - v_0 
+            #     v_0 = 16.67 - diferencia
             
             # Actualización de la posición y velocidad en el segundo t. Física, no es una decisión del agente.
             self.pos[i, t] = self.pos[i, t-1] + self.spd[i, t-1] * 1 # unidad de tiempo (1s)
