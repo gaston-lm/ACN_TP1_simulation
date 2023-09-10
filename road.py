@@ -83,7 +83,10 @@ class RoadSimulation:
         self.pos[i, t] = self.pos[i, t-1] + self.spd[i, t-1] * 1 + pos_noise # unidad de tiempo (1s)
 
     def update_spd(self, i, t):
-        spd_noise = np.random.normal(loc=0,scale=0.3)
+        spd_noise = 0
+        if self.collisioned[i] != -1: # si este auto choco, no le puedo sumar ruido, debe bajar o mantenerse en 0
+            spd_noise = np.random.normal(loc=0,scale=0.3)
+
         self.spd[i, t] = max(0.0, self.spd[i, t-1] + self.acc[i, t-1] * 1 + spd_noise) # unidad de tiempo (1s) 
 
     def update_acc(self, i, t, v_0):
@@ -97,17 +100,17 @@ class RoadSimulation:
             s_star = self.s_0 + v * self.headway[i] + (v * (v - self.spd[i-1, t])) / (2 * np.sqrt(self.a_max * self.b))
             acc = self.a_max * (1 - (v / v_0) ** self.delta - (s_star / s) ** 2)
         
+        # Ruido acc
+        acc_noise = np.random.normal(loc=0,scale=0.5)
+        acc = acc + acc_noise
+
         # Límites físicos de la aceleración:
         if acc < - 4.0:
             acc = -4.0
         elif acc > 2.0:
             acc = 2.0
 
-        # Ruido acc
-        acc_noise = np.random.normal(loc=0,scale=0.5)
-
         # Distracciones y actualización de la matriz.
-
         indicadora = np.random.uniform(low=0, high=1)
         lm = 0.02
 
@@ -115,7 +118,7 @@ class RoadSimulation:
             # print("Uy me distraje en "+str(t) +", soy "+str(i))
             self.acc[i,t] = self.acc[i, t-1] # Me distraje y no modifiqué mi aceleración anterior.
         else:
-            self.acc[i,t] = acc + acc_noise # Modifico la aceleracion acorde al modelo.
+            self.acc[i,t] = acc # Modifico la aceleracion acorde al modelo.
 
     def dsr_spd_based_on_pos(self, i, t, v_0):
         new_v_0 = v_0
@@ -131,7 +134,7 @@ class RoadSimulation:
         #     (9700, 9800), (11500, 12500)
         # ] # Lista de todas las intercepciones en los primeros 13.000 metros (hasta acceso norte)
 
-        entradas = [(2500, 2700), (4300,4500),(5900, 6100),(7400, 7800),(12500, 12700)]
+        entradas = [(2500, 2650), (4350,4500),(5900, 6050),(7450, 7800),(12550, 12700)]
 
         if any(start < self.pos[i, t-1] < end for start, end in entradas):
             diferencia = 22.2 - v_0 
@@ -160,7 +163,7 @@ class RoadSimulation:
         if self.collisioned[i] != -1 and t < self.collisioned[i]: # Si este auto choco, verifico que el tiempo para frenar siga vigente para desacelerar manera realista
             print("Soy " + str(i) + ". Frené por choque. Me falta " + str(self.collisioned[i]-t))
             if self.spd[i,t] > 0.5: # Si aun me queda por frenar
-                self.acc[i,t] = -self.b
+                self.acc[i,t] = -self.b / 2 # no freno tan brusco
             else:
                 self.acc[i,t] = 0
 
@@ -169,7 +172,7 @@ class RoadSimulation:
             
         elif self.collisioned[i] == 0:
             # Ya paso el tiempo, vuelve a arrancar
-            self.acc[i,t] = 1.67 # Chequear
+            self.acc[i,t] = 1.67 # Chequear: creo q esto no hace falta, calcula en siguiente t
             self.collisioned[i] = -1
             self.collisioned_agents.remove(i)
             
@@ -201,7 +204,6 @@ class RoadSimulation:
             self.update_acc(i, t, v_0)
 
             # Manejo las colisiones
-
             self.verify_colision(i, t)
             self.identify_colision(i, t)
             
