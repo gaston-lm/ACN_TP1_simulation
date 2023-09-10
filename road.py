@@ -37,15 +37,7 @@ class RoadSimulation:
         # Id del primer 
         self.id_first_agent_to_consider = -1
 
-    def enter(self, a, t):
-        if t != 0:
-            new_agent = np.zeros((1,self.time_limit))
-            self.pos = np.vstack((self.pos, new_agent))
-            self.acc = np.vstack((self.acc, new_agent))
-            self.spd = np.vstack((self.spd, new_agent))
-        
-        # Definimos variables de cada agente
-
+    def agent_attr(self):
         # Headway
         hdw = np.random.lognormal(mean=0.5, sigma=0.21)
         # Media de headway para este agente
@@ -54,8 +46,29 @@ class RoadSimulation:
         self.headway.append(hdw)
 
         # Velocidad deseada
-        desired_speed_for_agent = np.random.normal(loc=20.67, scale=1)
+        desired_speed_for_agent = 0
+        if hdw < 1.2:
+            # Van más rápido
+            desired_speed_for_agent = 22.22 + np.random.uniform(low=0, high=4)
+        elif 1.2 < hdw < 1.8:
+            # Van normal
+            desired_speed_for_agent = 21.80 + np.random.normal(loc=0, scale=0.4)
+        else:
+            # Vam más lento
+            desired_speed_for_agent = 19.44 + np.random.normal(loc=0, scale=0.8)
+       
         self.dsr_spd.append(desired_speed_for_agent)
+
+
+    def enter(self, a, t):
+        if t != 0:
+            new_agent = np.zeros((1,self.time_limit))
+            self.pos = np.vstack((self.pos, new_agent))
+            self.acc = np.vstack((self.acc, new_agent))
+            self.spd = np.vstack((self.spd, new_agent))
+
+        # Definimos atributos del agente entrando
+        self.agent_attr()
 
         # Vector para registrar tiempo a esperar si choco
         self.collisioned.append(-1)
@@ -70,12 +83,12 @@ class RoadSimulation:
 
         else:
             spd_prev = np.random.uniform(low=8.33, high=9.72, size=1)
-            acc_prev = min(2, max(-4 , self.a_max * (1 - (spd_prev / 22.22) ** self.delta - ((self.s_0 + spd_prev * hdw + (spd_prev * (spd_prev - self.spd[a-1, t])) / (2 * np.sqrt(self.a_max * self.b))) / (self.pos[a-1, t] - 1 - self.car_length)) ** 2)))
+            acc_prev = min(2, max(-4 , self.a_max * (1 - (spd_prev / 22.22) ** self.delta - ((self.s_0 + spd_prev * self.headway[a] + (spd_prev * (spd_prev - self.spd[a-1, t])) / (2 * np.sqrt(self.a_max * self.b))) / (self.pos[a-1, t] - 1 - self.car_length)) ** 2)))
         
             spd = spd_prev + acc_prev
                 
             self.spd[a,t] = spd
-            self.acc[a,t] = min(2, max(-4, self.a_max * (1 - (spd / 22.22) ** self.delta - ((self.s_0 + spd * hdw + (spd * (spd - self.spd[a-1, t])) / (2 * np.sqrt(self.a_max * self.b))) / (self.pos[a-1, t] - 1 - self.car_length)) ** 2)))
+            self.acc[a,t] = min(2, max(-4, self.a_max * (1 - (spd / 22.22) ** self.delta - ((self.s_0 + spd * self.headway[a] + (spd * (spd - self.spd[a-1, t])) / (2 * np.sqrt(self.a_max * self.b))) / (self.pos[a-1, t] - 1 - self.car_length)) ** 2)))
 
         # Registro entrada de autos a partir de llegado el primero
         if self.flag_first_arrived:
@@ -88,7 +101,7 @@ class RoadSimulation:
         pos_noise = 0
         # Si este auto choco, no le puedo sumar ruido, debe bajar o mantenerse en 0
         if self.collisioned[i] != -1 and self.spd[i,t] > 0: 
-            pos_noise = np.random.normal(loc=0,scale=0.7)
+            pos_noise = np.random.normal(loc=0,scale=0.6)
 
         self.pos[i, t] = pos_noise + self.pos[i, t-1] + self.spd[i, t-1] * 1 # unidad de tiempo (1s)
 
@@ -112,7 +125,7 @@ class RoadSimulation:
             acc = self.a_max * (1 - (v / v_0) ** self.delta - (s_star / s) ** 2)
         
         # Ruido acc
-        acc_noise = np.random.normal(loc=0,scale=0.5)
+        acc_noise = np.random.normal(loc=0,scale=0.15)
         acc = acc + acc_noise
 
         # Límites físicos de la aceleración:
@@ -125,10 +138,10 @@ class RoadSimulation:
         indicadora = np.random.uniform(low=0, high=1)
         lm = 0.02
 
-        if indicadora < 0.000001:
+        if indicadora < 0.001:
             # Distracción "fuerte"
-            print("Distracción extrema")
-            self.acc[i,t] = acc + np.random.normal(loc=0, scale=0.6)
+            # print("Distracción extrema")
+            self.acc[i,t] = acc - abs(np.random.normal(loc=0, scale=3))
         elif indicadora < lm:
             # Distación "leve"
             # Se distrajo y no modifica la aceleración anterior.
@@ -152,11 +165,11 @@ class RoadSimulation:
         #     (9700, 9800), (11500, 12500)
         # ] # Lista de todas las intercepciones en los primeros 13.000 metros (hasta acceso norte)
 
-        entradas = [(2500, 2650), (4350,4500),(5900, 6050),(7450, 7800),(12550, 12700)]
+        # entradas = [(2500, 2650), (4350,4500),(5900, 6050),(7450, 7800),(12550, 12700)]
 
-        if any(start < self.pos[i, t-1] < end for start, end in entradas):
-            diferencia = 22.2 - v_0 
-            new_v_0 = 18.5 - diferencia
+        # if any(start < self.pos[i, t-1] < end for start, end in entradas):
+        #     diferencia = 22.2 - v_0 
+        #     new_v_0 = 18.5 - diferencia
 
         # if 13500 < self.pos[i, t-1] < 13530:
         #     diferencia = 27.77 - v_0 
@@ -179,7 +192,7 @@ class RoadSimulation:
     
     def update_headway(self, i, t):
         p = np.random.uniform(low=0, high=1)
-        if p > 0.60 and t % 60 == 0:
+        if p > 0.60 and t % 30 == 0:
             # print("Cambio headway el agente "+str(i))
             self.headway[i] = self.headway_mean[i] + np.random.normal(loc=0, scale=0.3)
     
@@ -192,9 +205,6 @@ class RoadSimulation:
                 self.acc[i,t] = 0
                 self.spd[i,t] = 0
                 self.pos[i,t] = self.pos[i, t-1]
-
-            # Le resto tiempo que aun tiene que esperar para comenzar de nuevo a andar
-            self.collisioned[i] -= 1
             
         elif self.collisioned[i] == 0:
             # Ya paso el tiempo, vuelve a arrancar
@@ -207,14 +217,14 @@ class RoadSimulation:
             if self.pos[i-1,t] - self.car_length <= self.pos[i,t]: 
                 if self.pos[i,t-4] < 2:
                     print("Recien había entrado y ya choque :(")
-                print("Choque de " + str(i) + " con " + str(i-1) + " en t = " + str(t))  # Choque leve < 13.88
+                print("Choque de " + str(i) + " con " + str(i-1) + " en t = " + str(t) + " en " + str(self.pos[i,t]))  # Choque leve < 13.88
 
                 # Registrar choque y agentes involucrados
                 self.collisions += 1
                 self.collisioned_agents.add(i)
                 self.collisioned_agents.add(i-1)
-                self.collisioned[i] = t + (self.spd[i,t] // self.b) + 60 # Sumamos tiempo que requerira frenarse por completo + tiempo para pasarse datos del seguro
-                self.collisioned[i-1] = t + (self.spd[i-1,t] // self.b) + 60 
+                self.collisioned[i] = t + (self.spd[i,t] // self.b) + 120 # Sumamos tiempo que requerira frenarse por completo + tiempo para pasarse datos del seguro
+                self.collisioned[i-1] = t + (self.spd[i-1,t] // self.b) + 120 
 
     def update(self, t):
         i = 0
@@ -263,7 +273,7 @@ class RoadSimulation:
             p = np.random.uniform(low=0, high=1, size=1).item()
             umbral = 0 # 0: Horario pico, 0.5: Normal, 0.7 Madrugada
 
-            # if 800 < t < 4400: # de 5 a 6
+            # if 0 < t < 4400: # de 5 a 6
             #     umbral = 0.8
             # elif 4400 < t < 8000: # de 6 a 7
             #     umbral = 0.5
