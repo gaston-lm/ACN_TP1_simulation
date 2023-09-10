@@ -11,6 +11,7 @@ def run_animation(car_positions, scale=1.0, min_visible_x=0, max_visible_x=None,
     CAR_WIDTH = 7
     CAR_HEIGHT = 4
     ROAD_COLOR = (100, 100, 100)
+    CAR_COLOR = (0, 0, 0)
     FPS = fps
     Y_POSITION = (SCREEN_HEIGHT - CAR_HEIGHT) // 2
 
@@ -67,9 +68,9 @@ def run_animation(car_positions, scale=1.0, min_visible_x=0, max_visible_x=None,
     pygame.quit()
     sys.exit()
 
-car_positions = np.load("exp\pos.npy")  # Load your numpy array
+car_positions = np.load("pos_choques.npy")  # Load your numpy array
 # Correr toda la Av. Gral Paz entre Liniers y Lugones
-# run_animation(car_positions, fps=30)
+run_animation(car_positions, fps=30)
 
 # Correr zoomeado en un lugar:
-run_animation(car_positions, scale=2.0, min_visible_x=0, max_visible_x=5000, fps=30)
+# run_animation(car_positions, scale=2.0, min_visible_x=0, max_visible_x=5000, fps=15)
