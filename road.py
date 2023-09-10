@@ -181,7 +181,7 @@ class RoadSimulation:
         p = np.random.uniform(low=0, high=1)
         if p > 0.60 and t % 60 == 0:
             # print("Cambio headway el agente "+str(i))
-            self.headway[i] = self.headway_mean[i] - abs(np.random.normal(loc=0, scale=0.41))
+            self.headway[i] = self.headway_mean[i] + np.random.normal(loc=0, scale=0.3)
     
     def verify_colision(self, i, t):
         if self.collisioned[i] != -1 and t < self.collisioned[i]: # Si este auto choco, verifico que el tiempo para frenar siga vigente para desacelerar manera realista
