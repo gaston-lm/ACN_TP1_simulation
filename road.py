@@ -79,7 +79,10 @@ class RoadSimulation:
                 self.id_first_agent_to_consider = a
     
     def update_pos(self, i, t):
-        pos_noise = np.random.normal(loc=0,scale=0.7)
+        pos_noise = 0
+        if self.collisioned[i] != -1: # si este auto choco, no le puedo sumar ruido, debe bajar o mantenerse en 0
+            pos_noise = np.random.normal(loc=0,scale=0.7)
+
         self.pos[i, t] = self.pos[i, t-1] + self.spd[i, t-1] * 1 + pos_noise # unidad de tiempo (1s)
 
     def update_spd(self, i, t):
