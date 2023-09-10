@@ -8,7 +8,7 @@ def run_animation(car_positions, scale=1.0, min_visible_x=0, max_visible_x=None,
 
     SCREEN_WIDTH = 1200
     SCREEN_HEIGHT = 600
-    CAR_WIDTH = 8
+    CAR_WIDTH = 7
     CAR_HEIGHT = 4
     ROAD_COLOR = (100, 100, 100)
     FPS = fps
@@ -23,12 +23,12 @@ def run_animation(car_positions, scale=1.0, min_visible_x=0, max_visible_x=None,
     # Load a font for displaying the time step
     font = pygame.font.Font(None, 36)
 
-    def draw_cars(x_coordinates, colors):
-        for x, color in zip(x_coordinates, colors):
+    def draw_cars(x_coordinates):
+        for x in x_coordinates:
             if 0.5 + min_visible_x <= x <= max_visible_x:
                 # Adjust the x-coordinate for scale and visibility
                 adjusted_x = int((x - min_visible_x) * scale)
-                pygame.draw.rect(screen, color, (adjusted_x, Y_POSITION, CAR_WIDTH, CAR_HEIGHT))
+                pygame.draw.rect(screen, CAR_COLOR, (adjusted_x, Y_POSITION, CAR_WIDTH, CAR_HEIGHT))
 
     clock = pygame.time.Clock()
     running = True
@@ -51,8 +51,8 @@ def run_animation(car_positions, scale=1.0, min_visible_x=0, max_visible_x=None,
         # Convert float positions to integers
         current_positions = current_positions.astype(float)
 
-        # Draw the cars with their respective random colors
-        draw_cars(current_positions, car_colors)
+        # # Draw the cars with their respective random colors
+        draw_cars(current_positions)
 
         # Display the current time step as text
         time_text = font.render(f"Time: {time_step}", True, (255, 255, 255))
@@ -67,9 +67,9 @@ def run_animation(car_positions, scale=1.0, min_visible_x=0, max_visible_x=None,
     pygame.quit()
     sys.exit()
 
-car_positions = np.load("exp/otros/5000s_ruido_entradas.npy")  # Load your numpy array
+car_positions = np.load("exp\pos.npy")  # Load your numpy array
 # Correr toda la Av. Gral Paz entre Liniers y Lugones
-run_animation(car_positions, fps=20)
+# run_animation(car_positions, fps=30)
 
 # Correr zoomeado en un lugar:
-# run_animation(car_positions, scale=2.0, min_visible_x=1000, max_visible_x=4000, fps=18)
+run_animation(car_positions, scale=2.0, min_visible_x=0, max_visible_x=5000, fps=30)

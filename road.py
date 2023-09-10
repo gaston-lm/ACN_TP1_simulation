@@ -120,6 +120,9 @@ class RoadSimulation:
         if indicadora < lm:
             # print("Uy me distraje en "+str(t) +", soy "+str(i))
             self.acc[i,t] = self.acc[i, t-1] # Me distraje y no modifiqué mi aceleración anterior.
+        elif indicadora < 0.0001:
+            print("Distracción extrema")
+            self.acc[i,t] = acc + np.random.normal(loc=0, scale=0.5)
         else:
             self.acc[i,t] = acc # Modifico la aceleracion acorde al modelo.
 
@@ -217,11 +220,12 @@ class RoadSimulation:
                     self.arrived.add(i)
                     print("El primero llego en t="+str(t))
                     print("Cantidad de autos ahi: "+str(len(self.pos[:,t])))
-                else:
-                    if self.id_first_agent_to_consider <= i:
-                        print(i,t)
-                        self.time_out.append(t)
-                        self.arrived.add(i)
+                elif i < self.id_first_agent_to_consider:
+                    self.arrived.add(i)
+                elif i >= self.id_first_agent_to_consider:
+                    print(i,t)
+                    self.time_out.append(t)
+                    self.arrived.add(i)
 
             i += 1
 
@@ -234,19 +238,19 @@ class RoadSimulation:
         while t < self.time_limit:
             self.update(t)
             p = np.random.uniform(low=0, high=1, size=1).item()
-            umbral = 0.4 # 0: Horario pico, 0.5: Normal, 0.7 Madrugada
-            if 800 < t < 4400: # de 5 a 6
-                umbral = 0.8
-            elif 4400 < t < 8000: # de 6 a 7
-                umbral = 0.5
-            elif 8000 < t < 11600: # de 7 a 8
-                umbral = 0
-            elif 11600 < t < 15200: # de 8 a 9
-                umbral = 0.2
-            elif 15200 < t < 18800: # de 9 a 10
-                umbral = 0.3
-            else:
-                umbral = 0.5
+            umbral = 0.7 # 0: Horario pico, 0.5: Normal, 0.7 Madrugada
+            # if 800 < t < 4400: # de 5 a 6
+            #     umbral = 0.8
+            # elif 4400 < t < 8000: # de 6 a 7
+            #     umbral = 0.5
+            # elif 8000 < t < 11600: # de 7 a 8
+            #     umbral = 0
+            # elif 11600 < t < 15200: # de 8 a 9
+            #     umbral = 0.2
+            # elif 15200 < t < 18800: # de 9 a 10
+            #     umbral = 0.3
+            # else:
+            #     umbral = 0.5
 
             if self.pos[agents_enter-1,t] > 10 and p > umbral:
                 self.enter(agents_enter, t)
