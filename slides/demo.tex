@@ -1,0 +1,117 @@
+\documentclass[10pt, compress]{beamer}
+
+\usetheme{utopia}
+
+\usepackage{booktabs}
+\usepackage[scale=2]{ccicons}
+\usepackage{graphicx}
+\usepackage[style=numeric]{biblatex}
+
+\usepgfplotslibrary{dateplot}
+\addbibresource{bibliografia.bib}
+
+\title{Posibles negocios derivados de una simulaci\'on de la General Paz }
+\subtitle{Aplicaciones Computacionales en Negocios}
+\date{12/09/2023}
+\author{Tom\'as Curzio \\ Federico Giorgi \\ Gast\'on Loza Monta\~na  }
+% \titlegraphic{\includegraphics[scale=0.2]{images/logo2018.pdf}} % Optional title page image, comment this line to remove it
+\institute{Universidad Torcuato Di Tella}
+
+\begin{document}
+
+\maketitle
+
+\section{El modelo}
+
+\begin{frame}[fragile]
+
+\frametitle{El lugar y el tiempo}
+En este proyecto, buscamos simular un carril de la General Paz, mas precisamente, el trayecto desde Liniers hasta Lugones. 
+
+Para buscar datos representativos de los distintos picos de tr\'afico, simularemos una ma\~nana de d\'ia laboral, desde las 5:00 AM, con poca densidad de autos, pasando por las 7:30 - 8:30 AM, horario pico, para finalizar a las 10 AM, un horario mas calmo en cuanto a densidad de autos se refiere.
+
+Para entender la simulaci\'on, debemos comprender quienes son nuestros agentes y como interaccionan entre s\'i.
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+\frametitle{Agentes}
+
+Llamamos agentes a los conductores y su auto como un conjunto. Estos, poseen tres caracter\'isticas:
+
+\begin{itemize}
+\item $v_0$: Velocidad deseada -> Velocidad a la que le gustar\'ia ir al agente en caso de no estar restringido, representada en $m/s$. Tiene en cuenta la velocidad m\'axima de la Gral. Paz.
+\item $\mathcal{T}$: Headway -> Distancia en segundos que desea tener el agente con el agente que est\'a delante. Lo que en escuelas de manejo nos recomiendan que sea 2''.
+\item $l$: Longitud del veh\'iculo -> Longitud del auto del agente en metros.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+\frametitle{Reglas de interacci\'on}
+\begin{itemize}
+\item Cada agente tiene una posici\'on $X_t$ que se modifica en cada fracci\'on de tiempo $t$, que en nuestro modelo se incrementa de a 1s.
+\item A su vez, tienen una velocidad $V_t$.
+\end{itemize}
+Ambas se modifican segun las leyes f\'isicas de movimiento:
+\begin{itemize}
+\item $X_{t+1} = X_t + V_t * \Delta t$
+\item $V_{t+1} = X_t + a_t * \Delta t$
+\item $a_t = ?$ 
+\end{itemize}
+
+Los agentes toman decisiones en su aceleraci\'on, pudiendo frenar, mantenerla constante, o acelerar. Para determinar como lo hacen, utilizaremos un modelo conocido, llamado Intelligent Driver Model (IDM) \supercite{1}
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+\frametitle{Intelligent Driver Model}
+El Intelligent Driver Model actualiza la posici\'on y velocidad como mencionamos anteriormente. El calculo de la aceleraci\'on es el siguiente, con $\alpha$ el n\'umero de agente y $\alpha - 1$ el agente de adelante.
+
+  \begin{equation*}
+    a_t = a (1 - (\frac{v_\alpha}{v_0})^2 - (\frac{s_0 + v\mathcal{T} + (\frac{v_\alpha (v_\alpha - v_{\alpha-1}}{2\sqrt{ab}})}{x_{\alpha-1} - x_\alpha - l_{\alpha-1}})^2
+  \end{equation*}
+
+Donde:
+\begin{itemize}
+\item $v_0$: La velocidad deseada del agente.
+\item $s_0$: La minima distancia neta en metros (un auto no puede moverse si el de adelante esta a menos de $s_0$.
+\item $\mathcal{T}$: El headway del agente.
+\item $a$: La aceleraci\'on m\'axima del veh\'culo en $m/s^2$
+\item $b$: La desaceleraci\'on maxima del veh\'iculo en $m/s^2$ (valor absoluto).
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+\frametitle{Los par\'ametros seleccionados}
+
+
+\end{frame}
+
+\section{Resultados}
+
+\section{Posibles Negocios}
+
+\section{Conclusi\'on}
+
+\section{Referencias}
+
+\begin{frame}[fragile]
+
+\frametitle{Referencias}
+
+\textbf{Referencias}:
+\begin{itemize}
+\item [{[1]}] Treiber, M., Hennecke, A., \& Helbing, D. (2000). Congested traffic states in empirical observations and microscopic simulations. Physical review E, 62(2), 1805.
+\end{itemize}
+
+\end{frame}
+
+\plain{¿Preguntas?}
+
+\end{document}
