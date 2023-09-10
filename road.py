@@ -1,7 +1,7 @@
 import numpy as np
 
 class RoadSimulation:
-    def __init__(self, time_limit, a_max, b, delta, s_0, car_length):
+    def __init__(self, time_limit, a_max, b, delta, s_0, car_length, alert_app_prop):
         # Public
         self.time_limit = time_limit
 
@@ -37,6 +37,10 @@ class RoadSimulation:
         # Id del primer 
         self.id_first_agent_to_consider = -1
 
+        # For cool finding / hypotesis
+        self.alert_app_prop = alert_app_prop
+        self.uses_alert_app = []
+
     def agent_attr(self):
         # Headway
         hdw = np.random.lognormal(mean=0.5, sigma=0.21)
@@ -48,9 +52,12 @@ class RoadSimulation:
         # Velocidad deseada
         desired_speed_for_agent = 0
         if hdw < 1.2:
+            # Son loquitos
+            desired_speed_for_agent = 22.22 + np.random.lognormal(mean=1.5, sigma=0.25)
+        elif 1.2 < hdw < 1.5:
             # Van más rápido
             desired_speed_for_agent = 22.22 + np.random.uniform(low=0, high=4)
-        elif 1.2 < hdw < 1.8:
+        elif 1.5 < hdw < 1.8:
             # Van normal
             desired_speed_for_agent = 21.80 + np.random.normal(loc=0, scale=0.4)
         else:
@@ -59,6 +66,12 @@ class RoadSimulation:
        
         self.dsr_spd.append(desired_speed_for_agent)
 
+        # Usa o no app de alerta de radares
+        p = np.random.uniform(low=0, high=1)
+        if p > self.alert_app_prop:
+            self.uses_alert_app.append(True)
+        else:
+            self.uses_alert_app.append(False)
 
     def enter(self, a, t):
         if t != 0:
@@ -138,7 +151,7 @@ class RoadSimulation:
         indicadora = np.random.uniform(low=0, high=1)
         lm = 0.02
 
-        if indicadora < 0.001:
+        if indicadora < 0.0006:
             # Distracción "fuerte"
             # print("Distracción extrema")
             self.acc[i,t] = acc - abs(np.random.normal(loc=0, scale=3))
@@ -158,22 +171,12 @@ class RoadSimulation:
             diferencia = 22.22 - v_0 # Si v_0 > 22.22 le gusta ir más rápido, su nueva v_0 también es mayor que 27.77.
             new_v_0 = 27.77 - diferencia 
 
-        # Chequeo si el auto esta por llegar a una entrada
-        # interceptions = [
-        #     (800, 900), (1800, 1900), (2400, 2500), 
-        #     (3500, 3600), (6600, 6700), (7500, 7600), 
-        #     (9700, 9800), (11500, 12500)
-        # ] # Lista de todas las intercepciones en los primeros 13.000 metros (hasta acceso norte)
+        # Hay radares en: 2.4k, 6.5k, 12.2k
+        radar_windows = [(2000, 2550),(6000, 6650),(11700, 12350)]
 
-        # entradas = [(2500, 2650), (4350,4500),(5900, 6050),(7450, 7800),(12550, 12700)]
-
-        # if any(start < self.pos[i, t-1] < end for start, end in entradas):
-        #     diferencia = 22.2 - v_0 
-        #     new_v_0 = 18.5 - diferencia
-
-        # if 13500 < self.pos[i, t-1] < 13530:
-        #     diferencia = 27.77 - v_0 
-        #     v_0 = 16.67 - diferencia
+        if any(start < self.pos[i, t-1] < end for start, end in entradas):
+            if self.uses_alert_app[i] and v_0 > 21.5:
+                new_v_0 = 21
 
         return new_v_0
     
@@ -273,10 +276,10 @@ class RoadSimulation:
             p = np.random.uniform(low=0, high=1, size=1).item()
             umbral = 0 # 0: Horario pico, 0.5: Normal, 0.7 Madrugada
 
-            # if 0 < t < 4400: # de 5 a 6
-            #     umbral = 0.8
-            # elif 4400 < t < 8000: # de 6 a 7
-            #     umbral = 0.5
+            if 0 < t < 3000: # de 5 a 6
+                umbral = 0.9
+            elif 3000 < t < 6000: # de 6 a 7
+                umbral = 0.5
             # elif 8000 < t < 11600: # de 7 a 8
             #     umbral = 0
             # elif 11600 < t < 15200: # de 8 a 9
