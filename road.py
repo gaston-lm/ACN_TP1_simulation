@@ -87,7 +87,7 @@ class RoadSimulation:
     def update_pos(self, i, t):
         pos_noise = 0
         # Si este auto choco, no le puedo sumar ruido, debe bajar o mantenerse en 0
-        if self.collisioned[i] != -1: 
+        if self.collisioned[i] != -1 and self.spd[i,t] > 0: 
             pos_noise = np.random.normal(loc=0,scale=0.7)
 
         self.pos[i, t] = pos_noise + self.pos[i, t-1] + self.spd[i, t-1] * 1 # unidad de tiempo (1s)
@@ -95,7 +95,7 @@ class RoadSimulation:
     def update_spd(self, i, t):
         spd_noise = 0
         # Si este auto choco, no le puedo sumar ruido, debe bajar o mantenerse en 0
-        if self.collisioned[i] != -1: 
+        if self.collisioned[i] != -1 and self.spd[i,t] > 0: 
             spd_noise = np.random.normal(loc=0,scale=0.3)
 
         self.spd[i, t] = max(0.0, spd_noise + self.spd[i, t-1] + self.acc[i, t-1] * 1) # unidad de tiempo (1s) 
@@ -185,7 +185,7 @@ class RoadSimulation:
     
     def verify_colision(self, i, t):
         if self.collisioned[i] != -1 and t < self.collisioned[i]: # Si este auto choco, verifico que el tiempo para frenar siga vigente para desacelerar manera realista
-            print("Soy " + str(i) + ". Frené por choque. Me falta " + str(self.collisioned[i]-t))
+            # print("Soy " + str(i) + ". Frené por choque. Me falta " + str(self.collisioned[i]-t))
             if self.spd[i,t] > 0.5: # Si aun me queda por frenar
                 self.acc[i,t] = -self.b / 2 # no freno tan brusco
             else:
@@ -261,7 +261,8 @@ class RoadSimulation:
         while t < self.time_limit:
             self.update(t)
             p = np.random.uniform(low=0, high=1, size=1).item()
-            umbral = 0.2 # 0: Horario pico, 0.5: Normal, 0.7 Madrugada
+            umbral = 0 # 0: Horario pico, 0.5: Normal, 0.7 Madrugada
+
             # if 800 < t < 4400: # de 5 a 6
             #     umbral = 0.8
             # elif 4400 < t < 8000: # de 6 a 7
