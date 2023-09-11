@@ -162,8 +162,8 @@ class RoadSimulation:
             # Distracción "fuerte"
             # print("Distracción más fuerte")
             # self.acc[i,t] = acc - np.random.lognormal(mean=1.2, sigma=0.2)
-            self.acc[i,t] = acc - np.random.lognormal(mean=1.2, sigma=0.1)
-        elif indicadora < lm:
+            self.acc[i,t] = acc - np.random.lognormal(mean=1.1, sigma=0.1)
+        elif indicadora < 0.1:
             # Distación "leve"
             # Se distrajo y no modifica la aceleración anterior.
             self.acc[i,t] = self.acc[i, t-1]
@@ -210,7 +210,8 @@ class RoadSimulation:
         return v_0 + v_0_noise
     
     def update_headway(self, i, t):
-        if any((0 <= pos_collision - self.pos[i,t]  <= 500 and time + 3 == t) for time, pos_collision in self.actual_collisions.values()): 
+        if any((0 <= pos_collision - self.pos[i,t]  <= 500 and time + 3 == t) for time, pos_collision in self.actual_collisions.values()):
+            print("Soy " + str(i) + " y cambié mi headway.")
             self.headway[i] = self.headway_mean[i] + 1.0
 
         elif any((0 <= pos_collision - self.pos[i,t]  <= 500) for _, pos_collision in self.actual_collisions.values()):
