@@ -148,10 +148,10 @@ class RoadSimulation:
         acc = acc + acc_noise
 
         # Límites físicos de la aceleración:
-        if acc < - 4.0:
-            acc = -4.0
-        elif acc > 2.0:
-            acc = 2.0
+        if acc < -self.b:
+            acc = -self.b
+        elif acc > self.a_max:
+            acc = self.a_max
 
         # Distracciones y actualización de la matriz.
         indicadora = np.random.uniform(low=0, high=1)
