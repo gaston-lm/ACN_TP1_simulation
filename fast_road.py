@@ -1,6 +1,6 @@
 import numpy as np
 
-class RoadSimulation:
+class RoadSimulationFast:
     def __init__(self, time_limit, a_max, b, delta, s_0, car_length, alert_app_prop):
         # Public
         self.time_limit = time_limit
@@ -19,6 +19,7 @@ class RoadSimulation:
         self.dsr_spd = []
         self.headway_mean = []
         self.headway = []
+        self.is_distracted = []
 
         # For results
         self.time_out = []
@@ -30,7 +31,6 @@ class RoadSimulation:
         self.collisioned_agents = set()
         self.collisions = dict()
         self.collisions_in_radar = dict()
-        self.actual_collisions = dict()
 
         # Results
         self.results = np.empty((0,0))
@@ -50,7 +50,7 @@ class RoadSimulation:
 
     def agent_attr(self):
         # Headway
-        hdw = np.random.lognormal(mean=0.5, sigma=0.21)
+        hdw = np.random.lognormal(mean=0.2, sigma=0.1)
         # Media de headway para este agente
         self.headway_mean.append(hdw)
         # Donde se registra el headway con cierta variabilidad cada 30 segundos
@@ -58,19 +58,16 @@ class RoadSimulation:
 
         # Velocidad deseada
         desired_speed_for_agent = 0
-        if hdw < 1.2:
+        if hdw < 1.125:
             # Son loquitos
             desired_speed_for_agent = 22.22 + np.random.lognormal(mean=1.5, sigma=0.25)
-        elif 1.2 < hdw < 1.5:
+        elif 1.125 < hdw < 1.4:
             # Van más rápido
-            desired_speed_for_agent = 22.22 + np.random.uniform(low=0, high=4)
-        elif 1.5 < hdw < 1.8:
+            desired_speed_for_agent = 22.22 + np.random.lognormal(mean=0.1, sigma=0.1)
+        else:
             # Van normal
             desired_speed_for_agent = 21.80 + np.random.normal(loc=0, scale=0.4)
-        else:
-            # Vam más lento
-            desired_speed_for_agent = 19.44 + np.random.normal(loc=0, scale=0.8)
-       
+
         self.dsr_spd.append(desired_speed_for_agent)
 
         # Usa o no app de alerta de radares
@@ -92,6 +89,9 @@ class RoadSimulation:
 
         # Vector para registrar tiempo a esperar si choco
         self.collisioned.append(-1)
+
+        # Distracciones del estilo, agarro el celular por 5s
+        self.is_distracted.append(-1)
 
         self.pos[a,t] = 0.5
 
@@ -158,16 +158,24 @@ class RoadSimulation:
         indicadora = np.random.uniform(low=0, high=1)
         lm = 0.02
 
-        if indicadora < 0.001:
+        if self.is_distracted[i] != -1 and t <= self.is_distracted[i]:
+            self.acc[i,t] = self.acc[i,t-1]
+            if t == self.is_distracted[i]:
+                self.is_distracted[i] = -1
+
+        elif indicadora < 0.001:
             # Distracción "fuerte"
-            # print("Distracción más fuerte")
-            # self.acc[i,t] = acc - np.random.lognormal(mean=1.2, sigma=0.2)
-            self.acc[i,t] = acc - np.random.lognormal(mean=2, sigma=0.1)
+            print("Distracción más fuerte")
+            tiempo_distraccion = 5
+            self.is_distracted[i] = t + tiempo_distraccion
+            self.acc[i,t] = self.acc[i,t-1]
+
         elif indicadora < lm:
             # Distación "leve"
             # Se distrajo y no modifica la aceleración anterior.
             self.acc[i,t] = self.acc[i, t-1]
             # print("Uy me distraje en "+str(t) +", soy "+str(i))
+
         else:
             # Modifico la aceleracion acorde al modelo.
             self.acc[i,t] = acc
@@ -210,19 +218,10 @@ class RoadSimulation:
         return v_0 + v_0_noise
     
     def update_headway(self, i, t):
-        if any((0 <= pos_collision - self.position[i,t]  <= 500 and time + 3 == t) for time, pos_collision in self.actual_collisions.values()): 
-            self.headway[i] = self.headway_mean[i] + 1.0
-
-        elif any((0 <= pos_collision - self.position[i,t]  <= 500) for _, pos_collision in self.actual_collisions.values()):
-            pass
-
-        else:
-            if t % 30 == 0:
-                self.headway[i] = self.headway_mean[i]
-                p = np.random.uniform(low=0, high=1)
-                if p > 0.60:
-                    # print("Cambio headway el agente "+str(i))
-                    self.headway[i] = self.headway_mean[i] + np.random.normal(loc=0, scale=0.3)
+        p = np.random.uniform(low=0, high=1)
+        if p > 0.60 and t % 30 == 0:
+            # print("Cambio headway el agente "+str(i))
+            self.headway[i] = self.headway_mean[i] + np.random.normal(loc=0, scale=0.3)
     
     def verify_colision(self, i, t):
         if self.collisioned[i] != -1 and t < self.collisioned[i]: # Si este auto choco, verifico que el tiempo para frenar siga vigente para desacelerar manera realista
@@ -239,7 +238,6 @@ class RoadSimulation:
             self.acc[i,t] = 1.67 # Chequear: creo q esto no hace falta, calcula en siguiente t
             self.collisioned[i] = -1
             self.collisioned_agents.remove(i)
-            self.actual_collisions.pop(i)
             
     def identify_colision(self, i, t):
         if (i != 0) and (i not in self.collisioned_agents) and (self.pos[i,t] < 15500):
@@ -261,8 +259,6 @@ class RoadSimulation:
                 else:
                     self.collisions[i] = (t, self.pos[i,t])
                     self.collisions[i-1] = (t, self.pos[i-1,t])
-                
-                self.actual_collisions[i] = (t, self.pos[i,t])
 
     def update(self, t):
         i = 0
@@ -307,18 +303,18 @@ class RoadSimulation:
             self.update(t)
             p = np.random.uniform(low=0, high=1, size=1).item()
             umbral = 0 # 0: Horario pico, 0.5: Normal, 0.7 Madrugada
-            if 0 < t < 4400: # de 5 a 6
-                umbral = 0.9
-            elif 4400 < t < 8000: # de 6 a 7
-                umbral = 0.5
-            elif 8000 < t < 11600: # de 7 a 8
-                umbral = 0
-            elif 11600 < t < 15200: # de 8 a 9
-                umbral = 0.2
-            elif 15200 < t < 18800: # de 9 a 10
-                umbral = 0.4
-            else:
-                umbral = 0.5
+            # if 0 < t < 4400: # de 5 a 6
+            #     umbral = 0.9
+            # elif 4400 < t < 8000: # de 6 a 7
+            #     umbral = 0.5
+            # elif 8000 < t < 11600: # de 7 a 8
+            #     umbral = 0
+            # elif 11600 < t < 15200: # de 8 a 9
+            #     umbral = 0.2
+            # elif 15200 < t < 18800: # de 9 a 10
+            #     umbral = 0.4
+            # else:
+            #     umbral = 0.5
 
             if self.pos[agents_enter-1,t] > 10 and p > umbral:
                 self.enter(agents_enter, t)
