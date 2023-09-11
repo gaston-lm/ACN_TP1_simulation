@@ -272,18 +272,14 @@ class RoadSimulation:
             
             # Registro de llegada de agentes
             if self.pos[i, t] >= 15500 and i not in self.arrived:
+                self.arrived.add(i)
                 if i == 0:
                     self.flag_first_arrived = True
-                    self.arrived.add(i)
                     print("El primero llego en t="+str(t))
                     print("Cantidad de autos ahi: "+str(len(self.pos[:,t])))
-                elif i < self.id_first_agent_to_consider:
-                    self.arrived.add(i)
-                elif i >= self.id_first_agent_to_consider:
-                    if i != 1: # no entiendo pq a veces entra el 1 acá y entonces se rompe todo los resultados
-                        print(i,t)
-                        self.time_out.append(t)
-                        self.arrived.add(i)
+                elif self.id_first_agent_to_consider != -1 and self.id_first_agent_to_consider <= i:
+                    print(i,t)
+                    self.time_out.append(t)
 
             i += 1
 

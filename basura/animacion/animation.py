@@ -3,7 +3,7 @@ import numpy as np
 import sys
 import random
 
-def run_animation(car_positions, scale=1.0, min_visible_x=0, max_visible_x=None, fps=8):
+def run_animation(car_positions, scale=1.0, min_visible_x=0, max_visible_x=15500, fps=8):
     pygame.init()
 
     SCREEN_WIDTH = 1200
@@ -14,9 +14,6 @@ def run_animation(car_positions, scale=1.0, min_visible_x=0, max_visible_x=None,
     CAR_COLOR = (0, 0, 0)
     FPS = fps
     Y_POSITION = (SCREEN_HEIGHT - CAR_HEIGHT) // 2
-
-    if max_visible_x is None:
-        max_visible_x = len(car_positions[0])
 
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Car Simulation")
