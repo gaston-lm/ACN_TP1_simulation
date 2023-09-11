@@ -19,18 +19,24 @@ class RoadSimulation:
         self.dsr_spd = []
         self.headway_mean = []
         self.headway = []
+
         # For results
         self.time_out = []
         self.time_in = []
         self.arrived = set()
+
         # To handle collisions
         self.collisioned = []
         self.collisioned_agents = set()
-        self.collisions = 0
+        self.collisions = dict()
+        self.collisions_in_radar = dict()
+
         # Results
+        self.results = np.empty((0,0))
         self.avg_travel_time = 0
         self.avg_travel_speed = 0
         self.avg_travel_acc = 0
+
         # Para calcular stats después que llegó el primer auto
         # Flag de primer auto llegó
         self.flag_first_arrived = False
@@ -151,9 +157,9 @@ class RoadSimulation:
         indicadora = np.random.uniform(low=0, high=1)
         lm = 0.02
 
-        if indicadora < 0.0006:
+        if indicadora < 0.001:
             # Distracción "fuerte"
-            # print("Distracción extrema")
+            # print("Distracción más fuerte")
             self.acc[i,t] = acc - abs(np.random.normal(loc=0, scale=3))
         elif indicadora < lm:
             # Distación "leve"
@@ -162,7 +168,18 @@ class RoadSimulation:
             # print("Uy me distraje en "+str(t) +", soy "+str(i))
         else:
             # Modifico la aceleracion acorde al modelo.
-            self.acc[i,t] = acc 
+            self.acc[i,t] = acc
+
+    def is_in_radar_window(self, i, t):
+        vr = False
+
+        # Hay radares en: 2.4k, 6.5k, 12.2k
+        radar_windows = [(2000, 2550),(6000, 6650),(11700, 12350)]
+        
+        if any(start < self.pos[i, t] < end for start, end in radar_windows):
+            vr = True
+
+        return vr
 
     def dsr_spd_based_on_pos(self, i, t, v_0):
         new_v_0 = v_0
@@ -171,10 +188,7 @@ class RoadSimulation:
             diferencia = 22.22 - v_0 # Si v_0 > 22.22 le gusta ir más rápido, su nueva v_0 también es mayor que 27.77.
             new_v_0 = 27.77 - diferencia 
 
-        # Hay radares en: 2.4k, 6.5k, 12.2k
-        radar_windows = [(2000, 2550),(6000, 6650),(11700, 12350)]
-
-        if any(start < self.pos[i, t-1] < end for start, end in entradas):
+        if self.is_in_radar_window(i, t-1):
             if self.uses_alert_app[i] and v_0 > 21.5:
                 new_v_0 = 21
 
@@ -220,14 +234,21 @@ class RoadSimulation:
             if self.pos[i-1,t] - self.car_length <= self.pos[i,t]: 
                 if self.pos[i,t-4] < 2:
                     print("Recien había entrado y ya choque :(")
+                
                 print("Choque de " + str(i) + " con " + str(i-1) + " en t = " + str(t) + " en " + str(self.pos[i,t]))  # Choque leve < 13.88
 
                 # Registrar choque y agentes involucrados
-                self.collisions += 1
                 self.collisioned_agents.add(i)
                 self.collisioned_agents.add(i-1)
                 self.collisioned[i] = t + (self.spd[i,t] // self.b) + 120 # Sumamos tiempo que requerira frenarse por completo + tiempo para pasarse datos del seguro
                 self.collisioned[i-1] = t + (self.spd[i-1,t] // self.b) + 120 
+
+                if self.is_in_radar_window(i, t):
+                    self.collisions_in_radar[i] = (t, self.pos[i,t])
+                    self.collisions_in_radar[i-1] = (t, self.pos[i-1,t])
+                else:
+                    self.collisions[i] = (t, self.pos[i,t])
+                    self.collisions[i-1] = (t, self.pos[i-1,t])
 
     def update(self, t):
         i = 0
@@ -259,9 +280,10 @@ class RoadSimulation:
                 elif i < self.id_first_agent_to_consider:
                     self.arrived.add(i)
                 elif i >= self.id_first_agent_to_consider:
-                    print(i,t)
-                    self.time_out.append(t)
-                    self.arrived.add(i)
+                    if i != 1: # no entiendo pq a veces entra el 1 acá y entonces se rompe todo los resultados
+                        print(i,t)
+                        self.time_out.append(t)
+                        self.arrived.add(i)
 
             i += 1
 
@@ -275,19 +297,18 @@ class RoadSimulation:
             self.update(t)
             p = np.random.uniform(low=0, high=1, size=1).item()
             umbral = 0 # 0: Horario pico, 0.5: Normal, 0.7 Madrugada
-
-            if 0 < t < 3000: # de 5 a 6
+            if 0 < t < 4400: # de 5 a 6
                 umbral = 0.9
-            elif 3000 < t < 6000: # de 6 a 7
+            elif 4400 < t < 8000: # de 6 a 7
                 umbral = 0.5
-            # elif 8000 < t < 11600: # de 7 a 8
-            #     umbral = 0
-            # elif 11600 < t < 15200: # de 8 a 9
-            #     umbral = 0.2
-            # elif 15200 < t < 18800: # de 9 a 10
-            #     umbral = 0.3
-            # else:
-            #     umbral = 0.5
+            elif 8000 < t < 11600: # de 7 a 8
+                umbral = 0
+            elif 11600 < t < 15200: # de 8 a 9
+                umbral = 0.2
+            elif 15200 < t < 18800: # de 9 a 10
+                umbral = 0.4
+            else:
+                umbral = 0.5
 
             if self.pos[agents_enter-1,t] > 10 and p > umbral:
                 self.enter(agents_enter, t)
@@ -298,28 +319,32 @@ class RoadSimulation:
     def generate_results(self):
         self.time_out = np.array(self.time_out)
         self.time_in = np.array(self.time_in[:self.time_out.shape[0]])
+        
+        self.results = np.vstack((self.time_in, self.time_out))
 
         # Calcular tiempo promedio de viaje
         travel_time = self.time_out - self.time_in
-        avg_travel_time = np.mean(travel_time)
 
-        self.avg_travel_time = avg_travel_time
+        self.results = np.vstack((self.results, travel_time))
+        self.avg_travel_time = np.mean(travel_time)
 
         # Calcular velocidad promedio
-        sum_spd = 0
+        spds = []
         for i in range(len(self.time_out)):
             spd_agent = self.spd[self.id_first_agent_to_consider + i][self.time_in[i]:self.time_out[i]]
-            sum_spd += np.mean(spd_agent)
+            spds.append(np.mean(spd_agent))
 
-        self.avg_travel_speed = sum_spd / len(self.time_out)
+        self.results = np.vstack((self.results, np.array(spds)))
+        self.avg_travel_speed = np.sum(spds) / len(self.time_out)
 
         # Calcular aceleración promedio
-        sum_acc = 0
+        accs = []
         for i in range(len(self.time_out)):
             acc_agent = self.acc[self.id_first_agent_to_consider + i][self.time_in[i]:self.time_out[i]]
-            sum_acc += np.mean(acc_agent)
+            accs.append(np.mean(acc_agent))
 
-        self.avg_travel_acc = sum_acc / len(self.time_out)
+        self.results = np.vstack((self.results, np.array(accs)))
+        self.avg_travel_acc = np.sum(accs) / len(self.time_out)
         
     def get_avg_travel_time(self):
         return self.avg_travel_time
@@ -331,4 +356,4 @@ class RoadSimulation:
         return self.avg_travel_acc
 
     def get_collisions(self):
-        return self.collisions
+        return len(self.collisions) + len(self.collisions_in_radar)
