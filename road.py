@@ -156,14 +156,14 @@ class RoadSimulation:
 
         # Distracciones y actualización de la matriz.
         indicadora = np.random.uniform(low=0, high=1)
-        lm = 0.02
+        lm = 0.1
 
         if indicadora < 0.001:
             # Distracción "fuerte"
             # print("Distracción más fuerte")
             # self.acc[i,t] = acc - np.random.lognormal(mean=1.2, sigma=0.2)
             self.acc[i,t] = acc - np.random.lognormal(mean=1.1, sigma=0.1)
-        elif indicadora < 0.1:
+        elif indicadora < lm:
             # Distación "leve"
             # Se distrajo y no modifica la aceleración anterior.
             self.acc[i,t] = self.acc[i, t-1]
@@ -192,7 +192,7 @@ class RoadSimulation:
 
         if self.is_in_radar_window(i, t-1):
             if self.uses_alert_app[i] and v_0 > 21.5:
-                new_v_0 = 21
+                new_v_0 = 21 + np.random.normal(loc=0 , scale=0.06)
 
         return new_v_0
     
