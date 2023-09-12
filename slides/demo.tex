@@ -72,7 +72,7 @@ Los agentes toman decisiones en su aceleraci\'on, pudiendo frenar, mantenerla co
 El Intelligent Driver Model actualiza la posici\'on y velocidad como mencionamos anteriormente. El calculo de la aceleraci\'on es el siguiente, con $\alpha$ el n\'umero de agente y $\alpha - 1$ el agente de adelante.
 
   \begin{equation*}
-    a_t = a (1 - (\frac{v_\alpha}{v_0})^2 - (\frac{s_0 + v\mathcal{T} + (\frac{v_\alpha (v_\alpha - v_{\alpha-1}}{2\sqrt{ab}})}{x_{\alpha-1} - x_\alpha - l_{\alpha-1}})^2
+    a_t = a (1 - (\frac{v_\alpha}{v_0})^2 - (\frac{s_0 + v\mathcal{T} + (\frac{v_\alpha (v_\alpha - v_{\alpha-1})}{2\sqrt{ab}})}{x_{\alpha-1} - x_\alpha - l_{\alpha-1}})^2
   \end{equation*}
 
 Donde:
@@ -90,14 +90,63 @@ Donde:
 
 \frametitle{Los par\'ametros seleccionados}
 
+\begin{itemize}
+
+\item $\mathcal{T}$: Valores entre X y X para cada agente.
+\item $v_0$: Valores entre X y X para cada agente, correlacionados con  $\mathcal{T}$
+\item $l$: 4.3 metros para todos los agentes (longitud de un auto promedio)
+\item $s_0$: 5 metros.
+\item $a$: 2 $m/s^2$ -> Límites físicos charlados en clase.
+\item $b$: 4 $m/s^2$ -> Límites físicos charlados en clase.
+\item $\gamma$: Un nuevo par\'ametro que determina la proporci\'on de personas con waze o gmaps alertandolos de los radares. Utilizamos una proporcion de 0.6.
+
+\end{itemize}
 
 \end{frame}
 
 \section{Resultados}
 
+\begin{frame}
+\frametitle{Cambio en los par\'ametros}
+
+Al realizar el modelo, ten\'iamos en mente el objetivo de analizar el impacto de los radares, teniendo en cuenta que hay mucha gente hoy en d\'ia con aplicaciones que alertan de los mismos. Sin embargo, pudimos observar que los agentes que iban mas lento, generaban una fila de aquellos que querian ir mas r\'apido detr\'as de ellos, por lo que iban a velocidades lentas y los radares no generaban mucho impacto.
+
+¿Acá puede ir una animación mostrando esto?
+
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Cambio en los par\'ametros}
+
+Producto de una limitaci\'on del modelo, que es que tiene un solo carril, los agentes no pueden adelantarse. Para poder seguir en busca de observar datos que nos acerquen a nuestro objetivo, modificamos los parametros del \textit{headway} y \textit{velocidades deseadas}, intentando simular ahora el carril r\'apido, para poder captar de mejor manera el efecto de los radares, quedando de esta manera:
+
+\begin{itemize}
+\item $\mathcal{T}$: Valores entre X y X para cada agente.
+\item $v_0$: Valores entre X y X para cada agente, correlacionados con  $\mathcal{T}$
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Resultados con los nuevos par\'ametros}
+\end{frame}
+
 \section{Posibles Negocios}
 
+\begin{frame}
+\frametitle{¿D\'onde poner radares?}
+\end{frame}
+
+\begin{frame}
+\frametitle{Tradeoff: Recaudaci\'on vs Seguridad}
+\end{frame}
+
 \section{Conclusi\'on}
+
+\begin{frame}
+\frametitle{Conclusi\'on}
+\end{frame}
 
 \section{Referencias}
 
