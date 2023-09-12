@@ -1,5 +1,31 @@
 import pygame
 import numpy as np
+import os
+import sys
+
+class Video:
+
+    def __init__(self,size):
+        self.path = "D:\\Facultad\\Tercer Año\\Segundo Cuatrimestre\\ACN_TP1_simulation\slides\\animation"
+        self.name = "capture"
+        self.cnt = 0
+
+        # Ensure we have somewhere for the frames
+        try:
+            os.makedirs(self.path)
+        except OSError:
+            pass
+    
+    def make_png(self,screen):
+        self.cnt+=1
+        fullpath = self.path + "\\"+self.name + "%08d.png"%self.cnt
+        pygame.image.save(screen,fullpath)
+
+    #https://stackoverflow.com/questions/44947505/how-to-make-a-movie-out-of-images-in-python
+    #https://stackoverflow.com/questions/3561715/using-ffmpeg-to-encode-a-high-quality-video
+    def make_mp4(self):
+        os.system("ffmpeg -r 60 -i D:\Facultad\\animation\\capture%08d.png -vcodec mpeg4 -q:v 0 -y movie.mp4")
+
 
 # Initialize Pygame
 pygame.init()
@@ -70,11 +96,14 @@ def main(positions, fps):
 
     # Create a Pygame clock to control the frame rate
     clock = pygame.time.Clock()
-
+    video = Video((1280,720))
+    
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+
+        video.make_png(screen)
 
         draw_cars(positions, time_step)
         time_step = (time_step + 1) % num_time_steps
@@ -89,10 +118,12 @@ if __name__ == "__main__":
     # For example, you can create a random array with:
     # num_cars = 5
     # num_time_steps = 100
-    positions = np.load("pos_choques.npy")
+    positions = np.load("npys/results_noche_pasada/pos0.npy")
 
     # Set the desired FPS for animation
-    animation_fps = 30
+    animation_fps = 60
 
-    main(positions, animation_fps)
+    # main(positions, animation_fps)
 
+    video = Video((1280,720))
+    video.make_mp4()

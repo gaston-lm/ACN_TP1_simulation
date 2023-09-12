@@ -16,7 +16,7 @@
 \date{12/09/2023}
 \author{Tom\'as Curzio \\ Federico Giorgi \\ Gast\'on Loza Monta\~na  }
 % \titlegraphic{\includegraphics[scale=0.2]{images/logo2018.pdf}} % Optional title page image, comment this line to remove it
-\institute{Universidad Torcuato Di Tel}
+\institute{Universidad Torcuato Di Tella}
 
 \begin{document}
 
@@ -27,7 +27,7 @@
 \begin{frame}[fragile]
 
 \frametitle{El lugar y el tiempo}
-En este proyecto, buscamos simular un carril de la General Paz, mas precisamente, \href{https://www.google.com.ar/maps/dir/-34.6549026,-58.5273448/RN+A001,+Buenos+Aires/@-34.6307373,-58.5202617,14z}{\textcolor{blue}{el trayecto desde Liniers hasta Lugones}}. 
+En este proyecto, buscamos simular un carril de la General Paz, mas precisamente, \href{https://www.google.com.ar/maps/dir/-34.6549026,-58.5273448/RN+A001,+Buenos+Aires/@-34.5529941,-58.5215513,13z/data=!4m9!4m8!1m0!1m5!1m1!1s0x95bcb6a69ad1fc61:0x7f1d6a8008451498!2m2!1d-58.4682776!2d-34.5357282!3e0?entry=ttu}{\textcolor{blue}{el trayecto desde Liniers hasta Lugones}} (15.5 km). 
 
 Para buscar datos representativos de los distintos picos de tr\'afico, simularemos una ma\~nana de d\'ia laboral, desde las 5:00 AM, con poca densidad de autos, pasando por las 7:30 - 8:30 AM, horario pico, para finalizar a las 10 AM, un horario mas calmo en cuanto a densidad de autos se refiere.
 
@@ -42,8 +42,8 @@ Para entender la simulaci\'on, debemos comprender quienes son nuestros agentes y
 Llamamos agentes a los conductores y su auto como un conjunto. Estos, poseen tres caracter\'isticas:
 
 \begin{itemize}
-\item $v_0$: Velocidad deseada -> Velocidad a la que le gustar\'ia ir al agente en caso de no estar restringido, representada en $m/s$. Tiene en cuenta la velocidad m\'axima de la Gral. Paz.
 \item $\mathcal{T}$: Headway -> Distancia en segundos que desea tener el agente con el agente que est\'a delante. Lo que en escuelas de manejo nos recomiendan que sea 2''.
+\item $v_0$: Velocidad deseada -> Velocidad a la que le gustar\'ia ir al agente en caso de no estar restringido, representada en $m/s$. Est\'a correlacionada con $\mathcal{T}$ y tiene en cuenta la velocidad m\'axima de la Gral. Paz.
 \item $l$: Longitud del veh\'iculo -> Longitud del auto del agente en metros.
 \end{itemize}
 
@@ -94,12 +94,12 @@ Donde:
 \begin{itemize}
 
 \item $\mathcal{T}$: Valores entre X y X para cada agente.
-\item $v_0$: Valores entre X y X para cada agente, correlacionados con  $\mathcal{T}$
+\item $v_0$: Valores entre X y X para cada agente, correlacionados con $\mathcal{T}$
 \item $l$: 4.3 metros para todos los agentes (longitud de un auto promedio)
 \item $s_0$: 5 metros.
 \item $a$: 2 $m/s^2$ -> Límites físicos charlados en clase.
 \item $b$: 4 $m/s^2$ -> Límites físicos charlados en clase.
-\item $\gamma$: Un nuevo par\'ametro que determina la proporci\'on de personas con waze o gmaps alertandolos de los radares. Utilizamos una proporcion de 0.6.
+\item $\gamma$: Un nuevo par\'ametro que determina la proporci\'on de personas con waze o gmaps alertandolos de los radares. Vimos resultados con distintas proporciones: 0.2, 0.4 y 0.7.
 
 \end{itemize}
 
@@ -112,8 +112,7 @@ Donde:
 
 Al realizar el modelo, ten\'iamos en mente el objetivo de analizar el impacto de los radares, teniendo en cuenta que hay mucha gente hoy en d\'ia con aplicaciones que alertan de los mismos. Sin embargo, pudimos observar que los agentes que iban mas lento, generaban una fila de aquellos que querian ir mas r\'apido detr\'as de ellos, por lo que iban a velocidades lentas y los radares no generaban mucho impacto.
 
-\href{https://www.youtube.com/watch?v=-Pg819il8lY}{\textcolor{blue}{Se puede ver una animaci\'on donde esto ocurre ac\'a.}}
-
+Se puede ver una animaci\'on donde esto ocurre \href{https://youtu.be/NnljPUTmnGE}{\textcolor{blue}{ac\'a.}}
 
 \end{frame}
 
@@ -124,13 +123,31 @@ Producto de una limitaci\'on del modelo, que es que tiene un solo carril, los ag
 
 \begin{itemize}
 \item $\mathcal{T}$: Valores entre X y X para cada agente.
-\item $v_0$: Valores entre X y X para cada agente, correlacionados con  $\mathcal{T}$
+\item $v_0$: Valores entre X y X para cada agente, correlacionados con $\mathcal{T}$
 \end{itemize}
 
 \end{frame}
 
 \begin{frame}
 \frametitle{Resultados con los nuevos par\'ametros}
+\end{frame}
+
+\begin{frame}{¿C\'omo impactan los radares en la velocidad?}
+  \begin{table}
+    \caption{Velocidad promedio: En rango de radar vs fuera de rango}
+    \begin{tabular}{llll}
+      \toprule
+      Horario & En rango & Fuera de rango & Total \\
+      \midrule
+      5-6 AM & 1 & 1 & 1\\
+      6-7 AM & 1 & 1 & 1\\
+      7-8 AM & 1 & 1 & 1\\
+      8-9 AM & 1 & 1 & 1\\
+      9-10 AM & 1 & 1 & 1\\
+      Total & 1 & 1 & 1\\
+      \bottomrule
+    \end{tabular}
+  \end{table}
 \end{frame}
 
 \section{Posibles Negocios}
