@@ -67,7 +67,7 @@ class RoadSimulation:
         else:
             # Van normal
             desired_speed_for_agent = 21.80 + np.random.normal(loc=0, scale=0.4)
-       
+
         self.dsr_spd.append(desired_speed_for_agent)
 
         # Usa o no app de alerta de radares
@@ -153,14 +153,13 @@ class RoadSimulation:
 
         # Distracciones y actualización de la matriz.
         indicadora = np.random.uniform(low=0, high=1)
-        lm = 0.02
+        lm = 0.15
 
-        if indicadora < 0.001:
-            # Distracción "fuerte"
-            # print("Distracción más fuerte")
-            # self.acc[i,t] = acc - np.random.lognormal(mean=1.2, sigma=0.2)
-            self.acc[i,t] = acc - np.random.lognormal(mean=1.2, sigma=0.1)
-        elif indicadora < lm:
+        # if indicadora < 0.0001:
+        #     # Distracción "fuerte"
+        #     # print("Distracción más fuerte")
+        #     self.acc[i,t] = acc - np.random.lognormal(mean=1.2, sigma=0.1)
+        if indicadora < lm:
             # Distación "leve"
             # Se distrajo y no modifica la aceleración anterior.
             self.acc[i,t] = self.acc[i, t-1]
