@@ -153,17 +153,17 @@ class RoadSimulation:
 
         # Distracciones y actualización de la matriz.
         indicadora = np.random.uniform(low=0, high=1)
-        lm = 0.15
+        lm = 0.02
 
-        # if indicadora < 0.0001:
-        #     # Distracción "fuerte"
-        #     # print("Distracción más fuerte")
-        #     self.acc[i,t] = acc - np.random.lognormal(mean=1.2, sigma=0.1)
+        if indicadora < 0.0005:
+            # Distracción "fuerte"
+            self.acc[i,t] = max(-4, acc - np.random.lognormal(mean=1, sigma=0.1))
+
         if indicadora < lm:
             # Distación "leve"
             # Se distrajo y no modifica la aceleración anterior.
             self.acc[i,t] = self.acc[i, t-1]
-            # print("Uy me distraje en "+str(t) +", soy "+str(i))
+
         else:
             # Modifico la aceleracion acorde al modelo.
             self.acc[i,t] = acc
