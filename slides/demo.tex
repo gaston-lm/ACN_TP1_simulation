@@ -63,7 +63,7 @@ Ambas se modifican segun las leyes f\'isicas de movimiento:
 \item $a_t = ?$ 
 \end{itemize}
 
-Los agentes toman decisiones en su aceleraci\'on, pudiendo frenar, mantenerla constante, o acelerar. Para determinar como lo hacen, utilizaremos un modelo conocido, llamado Intelligent Driver Model (IDM) \supercite{1}
+Los agentes toman decisiones en su aceleraci\'on, pudiendo frenar, mantenerla constante, o acelerar. Para determinar como lo hacen, utilizaremos un modelo conocido, llamado Intelligent Driver Model (IDM). \supercite{1}
 
 \end{frame}
 
@@ -81,7 +81,7 @@ Donde:
 \item $v_0$: La velocidad deseada del agente.
 \item $s_0$: La minima distancia neta en metros (un auto no puede moverse si el de adelante esta a menos de $s_0$.
 \item $\mathcal{T}$: El headway del agente.
-\item $a$: La aceleraci\'on m\'axima del veh\'culo en $m/s^2$
+\item $a$: La aceleraci\'on m\'axima del veh\'culo en $m/s^2$.
 \item $b$: La desaceleraci\'on maxima del veh\'iculo en $m/s^2$ (valor absoluto).
 \end{itemize}
 
@@ -93,9 +93,9 @@ Donde:
 
 \begin{itemize}
 
-\item $\mathcal{T}$: Valores entre X y X para cada agente.
-\item $v_0$: Valores entre X y X para cada agente, correlacionados con $\mathcal{T}$
-\item $l$: 4.3 metros para todos los agentes (longitud de un auto promedio)
+\item $\mathcal{T}$: Valor obtenido de una lognormal con $\mu = 0.5$, $\sigma = 0.21$ (aproximadamente, valores entre 1 y 2.5 para cada agente).
+\item $v_0$: Valores entre 65 y 105 para cada agente, correlacionados con $\mathcal{T}$ (menor headway => mayor velocidad deseada).
+\item $l$: 4.3 metros para todos los agentes (longitud de un auto promedio).
 \item $s_0$: 5 metros.
 \item $a$: 2 $m/s^2$ -> Límites físicos charlados en clase.
 \item $b$: 4 $m/s^2$ -> Límites físicos charlados en clase.
@@ -119,11 +119,10 @@ Se puede ver una animaci\'on donde esto ocurre \href{https://youtu.be/NnljPUTmnG
 \begin{frame}
 \frametitle{Cambio en los par\'ametros}
 
-Producto de una limitaci\'on del modelo, que es que tiene un solo carril, los agentes no pueden adelantarse. Para poder seguir en busca de observar datos que nos acerquen a nuestro objetivo, modificamos los parametros del \textit{headway} y \textit{velocidades deseadas}, intentando simular ahora el carril r\'apido, para poder captar de mejor manera el efecto de los radares, quedando de esta manera:
+Producto de una limitaci\'on del modelo, que es que tiene un solo carril, los agentes no pueden adelantarse. Para poder seguir en busca de observar datos que nos acerquen a nuestro objetivo, modificamos el parametro de \textit{velocidades deseadas}, intentando simular ahora el carril r\'apido, para poder captar de mejor manera el efecto de los radares, quedando de esta manera:
 
 \begin{itemize}
-\item $\mathcal{T}$: Valores entre X y X para cada agente.
-\item $v_0$: Valores entre X y X para cada agente, correlacionados con $\mathcal{T}$
+\item $v_0$: Valores entre 75 y 105 para cada agente, correlacionados con $\mathcal{T}$.
 \end{itemize}
 
 \end{frame}
@@ -139,12 +138,12 @@ Producto de una limitaci\'on del modelo, que es que tiene un solo carril, los ag
       \toprule
       Horario & En rango & Fuera de rango & Total \\
       \midrule
-      5-6 AM & 1 & 1 & 1\\
-      6-7 AM & 1 & 1 & 1\\
-      7-8 AM & 1 & 1 & 1\\
-      8-9 AM & 1 & 1 & 1\\
-      9-10 AM & 1 & 1 & 1\\
-      Total & 1 & 1 & 1\\
+      5-6 AM & 20.7738 & 21.9909 & 21.8342\\
+      6-7 AM & 18.1827 & 19.2592 & 19.1201\\
+      7-8 AM & 18.2053 & 19.2610 & 19.1181\\
+      8-9 AM & 17.8417 & 18.9392 & 18.7987\\
+      9-10 AM & 17.7816 & 18.8951 & 18.7526\\
+      Total & 18.1774 & 19.2730 & 19.1307\\
       \bottomrule
     \end{tabular}
   \end{table}
