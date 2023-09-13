@@ -1,0 +1,3 @@
+Nos parece importante decirles, para que no tengan que revisar todo el código dos veces que la unica diferencia entre road y fast road son las velocidades deseadas de los agentes. 
+
+Esto se encuentra explicado también en las slides.
