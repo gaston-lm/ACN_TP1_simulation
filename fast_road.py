@@ -15,17 +15,17 @@ class RoadSimulation:
         self.car_length = car_length
 
         # Private
-        # For each agent
+        # Para cada agente
         self.dsr_spd = []
         self.headway_mean = []
         self.headway = []
 
-        # For results
+        # Para el análisis de resultados
         self.time_out = []
         self.time_in = []
         self.arrived = set()
 
-        # To handle collisions
+        # Para manejar las colisiones
         self.collisioned = []
         self.collisioned_agents = set()
         self.collisions = dict()
@@ -196,7 +196,7 @@ class RoadSimulation:
         # Calculamos su desired speed basado en sus caracteristicas de conductor + pos
         v_0 = self.dsr_spd_based_on_pos(i, t, self.dsr_spd[i])
 
-        # Con cieta proba le sumamos ruido
+        # Con cierta proba le sumamos ruido
         p = np.random.uniform(low=0, high=1)
         v_0_noise = 0
         
@@ -217,14 +217,12 @@ class RoadSimulation:
                 self.headway[i] = self.headway_mean[i]
                 p = np.random.uniform(low=0, high=1)
                 if p > 0.60:
-                    # print("Cambio headway el agente "+str(i))
                     self.headway[i] = self.headway_mean[i] + np.random.normal(loc=0, scale=0.3)
     
     def verify_colision(self, i, t):
         if self.collisioned[i] != -1 and t < self.collisioned[i]: # Si este auto choco, verifico que el tiempo para frenar siga vigente para desacelerar manera realista
-            # print("Soy " + str(i) + ". Frené por choque. Me falta " + str(self.collisioned[i]-t))
             if self.spd[i,t] > 0.5: # Si aun me queda por frenar
-                self.acc[i,t] = -self.b / 2 # no freno tan brusco
+                self.acc[i,t] = -self.b / 2 # No freno tan brusco
             else:
                 self.acc[i,t] = 0
                 self.spd[i,t] = 0
@@ -232,7 +230,7 @@ class RoadSimulation:
             
         elif self.collisioned[i] == 0:
             # Ya paso el tiempo, vuelve a arrancar
-            self.acc[i,t] = 1.67 # Chequear: creo q esto no hace falta, calcula en siguiente t
+            self.acc[i,t] = 1.67 # Ligeramente menor a acc max para que luego de un choque no arranquen lo más rápido
             self.collisioned[i] = -1
             self.collisioned_agents.remove(i)
             self.actual_collisions.pop(i)
@@ -302,7 +300,7 @@ class RoadSimulation:
         while t < self.time_limit:
             self.update(t)
             p = np.random.uniform(low=0, high=1, size=1).item()
-            umbral = 0 # 0: Horario pico, 0.5: Normal, 0.7 Madrugada
+            umbral = 0 
             if 0 < t < 4400: # de 5 a 6
                 umbral = 0.9
             elif 4400 < t < 8000: # de 6 a 7

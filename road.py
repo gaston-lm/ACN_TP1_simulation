@@ -197,7 +197,7 @@ class RoadSimulation:
         # Calculamos su desired speed basado en sus caracteristicas de conductor + pos
         v_0 = self.dsr_spd_based_on_pos(i, t, self.dsr_spd[i])
 
-        # Con cieta proba le sumamos ruido
+        # Con cierta proba le sumamos ruido
         p = np.random.uniform(low=0, high=1)
         v_0_noise = 0
         
@@ -208,7 +208,6 @@ class RoadSimulation:
     
     def update_headway(self, i, t):
         if any((0 <= pos_collision - self.pos[i,t]  <= 500 and time + 3 == t) for time, pos_collision in self.actual_collisions.values()):
-            print("Soy " + str(i) + " y cambié mi headway.")
             self.headway[i] = self.headway_mean[i] + 1.0
 
         elif any((0 <= pos_collision - self.pos[i,t]  <= 500) for _, pos_collision in self.actual_collisions.values()):
@@ -303,7 +302,7 @@ class RoadSimulation:
             self.update(t)
             p = np.random.uniform(low=0, high=1, size=1).item()
             # Definición de umbral de entrada en base a distintos horarios a simular
-            umbral = 0 # 0: Horario pico, 0.5: Normal, 0.7 Madrugada
+            umbral = 0 
             if 0 < t < 4400: # de 5 a 6
                 umbral = 0.9
             elif 4400 < t < 8000: # de 6 a 7
