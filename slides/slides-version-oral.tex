@@ -26,7 +26,7 @@
 \maketitle
 
 \section{El modelo}
-
+\addtocounter{framenumber}{-1}
 \begin{frame}[fragile]
 
 \frametitle{El lugar y el tiempo}
@@ -43,7 +43,7 @@ Buscamos simular un carril de la General Paz, mas precisamente, \href{https://ww
 \centering
 \includegraphics[width=10em]{gmaps-recorrido}
 \end{figure}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -57,7 +57,7 @@ Buscamos simular un carril de la General Paz, mas precisamente, \href{https://ww
 \end{figure}
 
 Simularemos una ma\~nana de d\'ia laboral, de 5:00 AM a 10 AM.
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -77,7 +77,7 @@ Llamamos agentes a los conductores y su auto como un conjunto. Estos, poseen tre
 \begin{itemize}
 \item $\mathcal{T}$: Headway -> Distancia en segundos que desea tener el agente con el agente que est\'a delante.
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 \begin{frame}[fragile]
 
@@ -89,7 +89,7 @@ Llamamos agentes a los conductores y su auto como un conjunto. Estos, poseen tre
 \item $\mathcal{T}$: Headway -> Distancia en segundos que desea tener el agente con el agente que est\'a delante.
 \item $v_0$: Velocidad deseada -> Velocidad a la que le gustar\'ia ir al agente en caso de no estar restringido, representada en $m/s$.
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -103,7 +103,7 @@ Llamamos agentes a los conductores y su auto como un conjunto. Estos, poseen tre
 \item $v_0$: Velocidad deseada -> Velocidad a la que le gustar\'ia ir al agente en caso de no estar restringido, representada en $m/s$.
 \item $l$: Longitud del veh\'iculo -> Longitud del auto del agente en metros.
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -123,17 +123,7 @@ Llamamos agentes a los conductores y su auto como un conjunto. Estos, poseen tre
 \item Cada agente tiene una posici\'on $X_t$ que se modifica en cada fracci\'on de tiempo $t$, en nuestro caso de a 1s.
 \item A su vez, tienen una velocidad $V_t$.
 \end{itemize}
-
-\end{frame}
-
-\begin{frame}[fragile]
-
-\frametitle{Reglas de interacci\'on}
-\begin{itemize}
-\item Cada agente tiene una posici\'on $X_t$ que se modifica en cada fracci\'on de tiempo $t$, en nuestro caso de a 1s.
-\item A su vez, tienen una velocidad $V_t$.
-\end{itemize}
-Ambas se modifican segun las leyes f\'isicas de movimiento:
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -144,10 +134,7 @@ Ambas se modifican segun las leyes f\'isicas de movimiento:
 \item A su vez, tienen una velocidad $V_t$.
 \end{itemize}
 Ambas se modifican segun las leyes f\'isicas de movimiento:
-\begin{itemize}
-\item $X_{t+1} = X_t + V_t * \Delta t$
-\end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -160,9 +147,8 @@ Ambas se modifican segun las leyes f\'isicas de movimiento:
 Ambas se modifican segun las leyes f\'isicas de movimiento:
 \begin{itemize}
 \item $X_{t+1} = X_t + V_t * \Delta t$
-\item $V_{t+1} = X_t + a_t * \Delta t$
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -175,10 +161,25 @@ Ambas se modifican segun las leyes f\'isicas de movimiento:
 Ambas se modifican segun las leyes f\'isicas de movimiento:
 \begin{itemize}
 \item $X_{t+1} = X_t + V_t * \Delta t$
-\item $V_{t+1} = X_t + a_t * \Delta t$
+\item $V_{t+1} = V_t + a_t * \Delta t$
+\end{itemize}
+\addtocounter{framenumber}{-1}
+\end{frame}
+
+\begin{frame}[fragile]
+
+\frametitle{Reglas de interacci\'on}
+\begin{itemize}
+\item Cada agente tiene una posici\'on $X_t$ que se modifica en cada fracci\'on de tiempo $t$, en nuestro caso de a 1s.
+\item A su vez, tienen una velocidad $V_t$.
+\end{itemize}
+Ambas se modifican segun las leyes f\'isicas de movimiento:
+\begin{itemize}
+\item $X_{t+1} = X_t + V_t * \Delta t$
+\item $V_{t+1} = V_t + a_t * \Delta t$
 \item $a_t = ?$ 
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -191,12 +192,12 @@ Ambas se modifican segun las leyes f\'isicas de movimiento:
 Ambas se modifican segun las leyes f\'isicas de movimiento:
 \begin{itemize}
 \item $X_{t+1} = X_t + V_t * \Delta t$
-\item $V_{t+1} = X_t + a_t * \Delta t$
+\item $V_{t+1} = V_t + a_t * \Delta t$
 \item $a_t = ?$ 
 \end{itemize}
 
 Los agentes toman decisiones en su aceleraci\'on, pudiendo frenar, mantenerla constante, o acelerar. Para determinar como lo hacen, utilizaremos un modelo conocido, llamado Intelligent Driver Model (IDM). \supercite{1}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -213,7 +214,7 @@ El Intelligent Driver Model actualiza la posici\'on y velocidad como mencionamos
   \begin{equation*}
     a_t = a (1 - (\frac{v_\alpha}{v_0})^2 - (\frac{s_0 + v\mathcal{T} + (\frac{v_\alpha (v_\alpha - v_{\alpha-1})}{2\sqrt{ab}})}{x_{\alpha-1} - x_\alpha - l_{\alpha-1}})^2
   \end{equation*}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -229,7 +230,7 @@ Donde:
 \begin{itemize}
 \item $v_0$: La velocidad deseada del agente.
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -246,7 +247,7 @@ Donde:
 \item $v_0$: La velocidad deseada del agente.
 \item $s_0$: La minima distancia neta en metros (un auto no puede moverse si el de adelante esta a menos de $s_0$).
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -264,7 +265,7 @@ Donde:
 \item $s_0$: La minima distancia neta en metros (un auto no puede moverse si el de adelante esta a menos de $s_0$).
 \item $\mathcal{T}$: El headway del agente.
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -283,7 +284,7 @@ Donde:
 \item $\mathcal{T}$: El headway del agente.
 \item $a$: La aceleraci\'on m\'axima posible del veh\'culo en $m/s^2$.
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -303,7 +304,7 @@ Donde:
 \item $a$: La aceleraci\'on m\'axima posible del veh\'culo en $m/s^2$.
 \item $b$: La desaceleraci\'on maxima posible del veh\'iculo en $m/s^2$ (valor absoluto).
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -328,7 +329,7 @@ Donde:
 \item $v_0$: Valores entre 65 y 105 para cada agente, correlacionados con $\mathcal{T}$
 
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -342,7 +343,7 @@ Donde:
 \item $l$: 4.3 metros para todos los agentes (longitud de un auto promedio).
 
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -357,7 +358,7 @@ Donde:
 \item $s_0$: 5 metros.
 
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -372,7 +373,7 @@ Donde:
 \item $a$: 2 $m/s^2$ -> Límites físicos charlados en clase.
 
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -388,7 +389,7 @@ Donde:
 \item $b$: 4 $m/s^2$ -> Límites físicos charlados en clase.
 
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -405,11 +406,11 @@ Donde:
 \item $\gamma$: Un nuevo par\'ametro que determina la proporci\'on de personas con waze o gmaps alertandolos de los radares. Simulamos con distintas proporciones: 0.2, 0.4 y 0.7.
 
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \section{Resultados}
-
+\addtocounter{framenumber}{-1}
 \begin{frame}[fragile]
 \frametitle{Cambio en los par\'ametros}
 
@@ -428,7 +429,7 @@ Donde:
 	\item Variabilidad de velocidades de los agentes.
 	\end{itemize}
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -441,7 +442,7 @@ Donde:
 	\item Limitaci\'on de un solo carril.
 	\end{itemize}
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -455,6 +456,7 @@ Donde:
 	\item Animaci\'on \href{https://youtu.be/NnljPUTmnGE}{\textcolor{blue}{ac\'a.}}
 	\end{itemize}
 \end{itemize}
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -469,7 +471,7 @@ Donde:
 	\end{itemize}
 \item Nuevo objetivo: simular el carril r\'apido
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -487,7 +489,7 @@ Donde:
 	\item $v_0$ m\'as altas (entre 75km/h y 105km/h) correlacionadas con $\mathcal{T}$.
 	\end{itemize}
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -506,7 +508,7 @@ Donde:
 	\item Tambi\'en con variabilidad.
 	\end{itemize}
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -560,7 +562,7 @@ Distribuci\'on tiempo de viaje por densidad de tr\'afico
 	\item A\'un con pocos agentes, la gran mayor\'ia disminuye la velocidad.
 	\end{itemize}
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -573,7 +575,7 @@ Distribuci\'on tiempo de viaje por densidad de tr\'afico
 	\end{itemize}
 \item Choques
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -589,7 +591,7 @@ Distribuci\'on tiempo de viaje por densidad de tr\'afico
 	\item De 30 simulaciones, en 1 hubo choque.
 	\end{itemize}
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -606,7 +608,7 @@ Distribuci\'on tiempo de viaje por densidad de tr\'afico
 	\item Propagaci\'on irreal.
 	\end{itemize}
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -624,11 +626,11 @@ Distribuci\'on tiempo de viaje por densidad de tr\'afico
 	\item Animaci\'on \href{https://www.youtube.com/watch?v=Yan5BorT-o0}{\textcolor{blue}{ac\'a.}}
 	\end{itemize}
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \section{Conclusi\'on}
-
+\addtocounter{framenumber}{-1}
 \begin{frame}[fragile]
 \frametitle{Tradeoff: Recaudaci\'on vs Seguridad}
 Con el avance en el uso de apps que notifican de los radares parecer\'ia ser una variable interesante para hacedores de pol\'iticas p\'ublicas la proporci\'on de agentes que las usan y como su comportamiento cambia debido a esto.
@@ -639,7 +641,7 @@ Con el avance en el uso de apps que notifican de los radares parecer\'ia ser una
 Con el avance en el uso de apps que notifican de los radares parecer\'ia ser una variable interesante para hacedores de pol\'iticas p\'ublicas la proporci\'on de agentes que las usan y como su comportamiento cambia debido a esto.
 
 Creemos que este tipo de comportamientos puede generar:
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -651,7 +653,7 @@ Creemos que este tipo de comportamientos puede generar:
 \begin{itemize}
 \item Decisiones bruscas en los agentes.
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -664,7 +666,7 @@ Creemos que este tipo de comportamientos puede generar:
 \item Decisiones bruscas en los agentes.
 \item Congestiones y mayores tiempos de viaje.
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -678,7 +680,7 @@ Creemos que este tipo de comportamientos puede generar:
 \item Congestiones y mayores tiempos de viaje.
 \item Accidentes.
 \end{itemize}
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -694,7 +696,7 @@ Creemos que este tipo de comportamientos puede generar:
 \end{itemize}
 
 Vimos el cambio en las velocidades, pero no pudimos observar todas estas cosas con las limitaciones que tiene el modelo. Sin embargo, nos sirvi\'o para notar la problem\'atica y tener un punto de partida.
-
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -714,6 +716,7 @@ A lo largo del proyecto observamos:
 \item Distintas duraciones de viaje seg\'un densidad de tr\'afico.
 \item \textit{Shockwaves} por micro-interacciones de los agentes.
 \end{itemize}
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -725,6 +728,7 @@ A lo largo del proyecto observamos:
 \item \textit{Shockwaves} por micro-interacciones de los agentes.
 \item Variaci\'on de la velocidad promedio en base al tr\'afico.
 \end{itemize}
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -737,6 +741,7 @@ A lo largo del proyecto observamos:
 \item Variaci\'on de la velocidad promedio en base al tr\'afico.
 \item Efecto de los radares en la velocidad de los agentes.
 \end{itemize}
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -750,6 +755,7 @@ A lo largo del proyecto observamos:
 \item Efecto de los radares en la velocidad de los agentes.
 \item Como podemos generar informaci\'on valiosa a partir de modelos de la realidad, que nos permiten sacar conclusiones o encontrar puntos de inter\'es, a pesar de sus limitaciones.
 \end{itemize}
+\addtocounter{framenumber}{-1}
 \end{frame}
 
 \begin{frame}[fragile]
